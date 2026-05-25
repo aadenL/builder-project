@@ -3,7 +3,7 @@ import { builders } from "@/app/builders";
 
 export function generateStaticParams() {
   return builders.map((builder) => ({
-    id: builder.id.toString(),
+    id: builder._id.toString(),
   }));
 }
 
@@ -13,7 +13,7 @@ export default async function BuilderPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const builder = builders.find((item) => item.id === Number(id));
+  const builder = builders.find((item) => item._id === Number(id));
 
   if (!builder) return notFound();
 

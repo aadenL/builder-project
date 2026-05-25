@@ -3,7 +3,7 @@ import type { Builder } from "@/app/builders";
 
 export default function BuilderCard({ builder }: { builder: Builder }) {
   return (
-    <Link href={`/builders/${builder.id}`} className="block">
+    <Link href={`/builders/${builder._id}`} className="block">
       <div className="flex justify-between gap-6 border rounded-xl p-6 shadow-sm cursor-pointer">
         <div className="flex-1">
           <h2 className="text-2xl font-semibold mb-2">

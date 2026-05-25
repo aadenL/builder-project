@@ -10,7 +10,7 @@ export default function Home() {
 
       <div className="grid gap-6">
         {builders.map((builder) => (
-          <BuilderCard key={builder.id} builder={builder} />
+          <BuilderCard key={builder._id} builder={builder} />
         ))}
       </div>
     </main>
