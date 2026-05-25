@@ -13,7 +13,7 @@ export default async function BuilderPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const builder = builders.find((item) => item._id === Number(id));
+  const builder = builders.find((item) => item._id === id);
 
   if (!builder) return notFound();
 

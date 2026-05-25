@@ -1,5 +1,5 @@
 export type Builder = {
-  _id: number;
+  _id: string;
   developer: string;
   name: string;
   location: string;
@@ -19,30 +19,9 @@ export type Builder = {
   features: string[];
 };
 
-export type BuilderListing = {
-  _id: string;
-  developer: string;
-  name: string;
-  location: string;
-  address: string;
-  type: string;
-  conStatus: string;
-  ceilings: string;
-  deposit: string;
-  price: number;
-  beds: number;
-  baths: number;
-  garage: number;
-  sqft: number;
-  desc: string;
-  listStatus: string;
-  img: string;
-  features: string[];
-}
-
 export const builders: Builder[] = [
   {
-    _id: 1,
+    _id: "1",
     developer: "Fairgate Homes",
     name: "Upper Stouffville",
     location: "Whitchurch-Stouffville, Ontario",
@@ -69,7 +48,7 @@ export const builders: Builder[] = [
     ],
   },
   {
-    _id: 2,
+    _id: "2",
     developer: "Fieldgate Homes",
     name: "Cityside - Phase 3",
     location: "Whitchurch-Stouffville, Ontario",
@@ -94,7 +73,7 @@ export const builders: Builder[] = [
     ],
   },
   {
-    _id: 3,
+    _id: "3",
     developer: "Fairgate Homes",
     name: "William St. Exhibit",
     location: "Whitchurch-Stouffville, Ontario",
