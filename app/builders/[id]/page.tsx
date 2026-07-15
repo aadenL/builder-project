@@ -1,21 +1,22 @@
 import { notFound } from "next/navigation";
-import { builders } from "@/app/builders";
+import { getBuilderById } from "@/app/builderData"; // Imports the function that fetches one builder from MongoDB by id.
 
-export function generateStaticParams() {
-  return builders.map((builder) => ({
-    id: builder._id.toString(),
-  }));
-}
+// Tells Next.js this route should read from MongoDB at request time.
+export const dynamic = "force-dynamic"; // Makes every builder detail page load fresh data from MongoDB.
 
-export default async function BuilderPage({
+export default async function BuilderPage({ // Marks the detail page as async so it can wait for route params and MongoDB.
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const builder = builders.find((item) => item._id === id);
+  // In this Next.js version, route params are a Promise, so we await them first.
+  const { id } = await params; // Pulls the MongoDB id out of the URL, like /builders/abc123.
 
-  if (!builder) return notFound();
+  // Uses the MongoDB ObjectId from the URL to fetch one builder document.
+  const builder = await getBuilderById(id); // Looks up the matching builder document in the database.
+
+  // If the id is invalid or no document exists, show Next.js' 404 page.
+  if (!builder) return notFound(); // Stops rendering and shows a 404 when no builder is found.
 
   return (
     <main className="p-10">

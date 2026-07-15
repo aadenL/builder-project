@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Builder } from "@/app/builders";
+import type { Builder } from "@/app/builderData";
 
 export default function BuilderCard({ builder }: { builder: Builder }) {
   return (

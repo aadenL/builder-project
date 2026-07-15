@@ -1,6 +1,26 @@
 import { ObjectId } from "mongodb";
 import { getDb } from "@/app/mongodb";
-import type { Builder } from "@/app/builders";
+
+export type Builder = {
+    _id: string;
+    developer: string;
+    name: string;
+    location: string;
+    address: string;
+    type: string;
+    conStatus: string;
+    ceilings: string;
+    deposit: string;
+    price: number;
+    beds: number;
+    baths: number;
+    garage: number;
+    sqft: number;
+    desc: string;
+    listStatus: string;
+    img: string;
+    features: string[];
+};
 
 //creates a new type based on Builder, but without _id
 //does this because the app wants _id as a string, but mongoDB stores _id as an ObjectId
