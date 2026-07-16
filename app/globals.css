@@ -1,26 +1,76 @@
+/* Loads Tailwind's generated utility classes, such as `flex`, `p-4`, and `text-lg`. */
 @import "tailwindcss";
 
+/* CSS variables hold the site's reusable, global color values. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #172033;
+  --surface: #ffffff;
+  --muted: #5f6f87;
+  --border: #dbe3ee;
+  --accent: #0f766e;
+  --search-focus: #8b9ab0;
 }
 
+/*
+ * `@theme` exposes these values to Tailwind as design tokens.
+ * `inline` tells Tailwind to use the variable values directly in generated utilities,
+ * so classes like `bg-background`, `text-foreground`, and `font-sans` stay in sync.
+ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* Respect the visitor's operating-system dark-mode preference. */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --surface: #172033;
+    --muted: #b3c0d1;
+    --border: #334155;
+    --accent: #5eead4;
+    --search-focus: #94a3b8;
   }
 }
 
+/* Base styles applied to every page; Tailwind utilities can override these per element. */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+/* Make links and interactive cards easy to identify when navigating by keyboard. */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Form controls use a tighter focus ring than links and cards. */
+input:focus-visible {
+  outline-width: 2px;
+  outline-offset: 1px;
+}
+
+/* The search field uses a quieter focus color than primary interactive elements. */
+.search-input:focus {
+  border-color: var(--search-focus);
+}
+
+.search-input:focus-visible {
+  outline-color: var(--search-focus);
+}
+
+/* Keep images from adding a small inline baseline gap. */
+img {
+  display: block;
 }

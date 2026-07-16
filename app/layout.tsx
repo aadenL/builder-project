@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Form from "next/form";
+import Link from "next/link";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +29,28 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <header className="border-b border-border bg-surface shadow-sm">
+          <nav className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3 sm:px-6" aria-label="Main navigation">
+            <Link href="/" className="text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent">
+              Preconstruction Listings
+            </Link>
+            <Link href="/" className="text-md tracking-tight text-foreground transition-colors hover:text-accent">
+              Home
+            </Link>
+            <Form action="/" className="ml-auto">
+              <input
+                type="search"
+                name="query"
+                placeholder="Search listings"
+                aria-label="Search listings"
+                className="search-input w-40 rounded-md border border-border bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted sm:w-56"
+              />
+            </Form>
+          </nav>
+        </header>
+        {children}
+      </body>
     </html>
   );
 }

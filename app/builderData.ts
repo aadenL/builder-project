@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, type Filter } from "mongodb";
 import { getDb } from "@/app/mongodb";
 
 export type Builder = {
@@ -36,14 +36,29 @@ function serializeBuilder(builder: BuilderDocument & { _id: ObjectId }): Builder
     };
 }
 
-//returns all builders
-export async function getBuilders() {
+// Returns listings whose key details contain the optional search query.
+export async function getBuilders(query = "") {
     const db = await getDb();
+    const searchTerm = query.trim();
+    // Treat special characters as normal text instead of regular-expression commands.
+    const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const filter: Filter<BuilderDocument> = escapedSearchTerm
+        ? {
+            $or: [
+                { name: { $regex: escapedSearchTerm, $options: "i" } },
+                { developer: { $regex: escapedSearchTerm, $options: "i" } },
+                { location: { $regex: escapedSearchTerm, $options: "i" } },
+                { address: { $regex: escapedSearchTerm, $options: "i" } },
+                { type: { $regex: escapedSearchTerm, $options: "i" } },
+                { features: { $regex: escapedSearchTerm, $options: "i" } },
+            ],
+        }
+        : {};
     const builders = await db
         //selects the MongoDB collection named builders, <BuilderDocument> tells TypeScript what kind of docs are in the collection
         .collection<BuilderDocument>("builders")
         //finds all the docs in the collectuin
-        .find()
+        .find(filter)
         //turns the result retrieved from MongoDB into a normal js array
         .toArray();
 

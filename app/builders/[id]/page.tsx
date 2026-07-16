@@ -19,38 +19,40 @@ export default async function BuilderPage({ // Marks the detail page as async so
   if (!builder) return notFound(); // Stops rendering and shows a 404 when no builder is found.
 
   return (
-    <main className="p-10">
-      <img
-        src={builder.img}
-        alt={builder.name}
-        className="w-full max-h-[400px] object-cover rounded-lg mb-6"
-      />
+    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+        <img
+          src={builder.img}
+          alt={builder.name}
+          className="h-64 w-full object-cover sm:h-96"
+        />
 
-      <h1 className="text-3xl font-bold mb-2">
-        {builder.name}
-      </h1>
+        <div className="p-5 sm:p-8">
+          <p className="mb-2 text-sm font-semibold tracking-[0.14em] text-accent uppercase">Preconstruction home</p>
+          <h1 className="mb-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            {builder.name}
+          </h1>
 
-      <p className="text-xl mb-4">
-        ${builder.price.toLocaleString()}
-      </p>
+          <p className="mb-5 text-2xl font-semibold text-accent">
+            ${builder.price.toLocaleString()}
+          </p>
 
-      <p className="mb-4">
-        {builder.desc}
-      </p>
+          <p className="mb-5 max-w-3xl leading-7 text-foreground/80">
+            {builder.desc}
+          </p>
 
-      <p className="mb-4">
-        {builder.beds} Bed &bull; {builder.baths} Bath &bull; {builder.sqft} sqft
-      </p>
+          <p className="mb-7 rounded-xl bg-background px-4 py-3 text-sm font-medium text-muted sm:inline-block sm:text-base">
+            {builder.beds} Bed &bull; {builder.baths} Bath &bull; {builder.sqft} sqft
+          </p>
 
-      <h2 className="font-semibold mb-2">
-        Features
-      </h2>
-
-      <ul className="list-disc pl-5">
-        {builder.features.map((feature) => (
-          <li key={feature}>{feature}</li>
-        ))}
-      </ul>
+          <h2 className="mb-3 text-lg font-semibold">Features</h2>
+          <ul className="grid gap-2 pl-5 text-muted marker:text-accent sm:grid-cols-2">
+            {builder.features.map((feature) => (
+              <li key={feature}>{feature}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </main>
   );
 }
