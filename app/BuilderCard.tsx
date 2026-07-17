@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Builder } from "@/app/builderData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 
 export default function BuilderCard({ builder }: { builder: Builder }) {
@@ -15,7 +15,7 @@ export default function BuilderCard({ builder }: { builder: Builder }) {
     // stopPropogation stops the event from bubbling upward, meaning instead of the button being clicked and the button handler running then the link handler running
     // then it navigates away to the link, it just stops after the button handler runs so you favorite the listing instead of clicking on the link
     e.stopPropagation();
-
+    
     setIsFavorite((prev) => !prev);
   }
 
@@ -29,7 +29,7 @@ export default function BuilderCard({ builder }: { builder: Builder }) {
           fill={isFavorite ? "red" : "none"}
         />
       </button>
-      
+
       <Link
         href={`/builders/${builder._id}`}
         className="group block rounded-2xl focus-visible:outline-none"
