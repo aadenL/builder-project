@@ -1,58 +1,117 @@
 import { notFound } from "next/navigation";
-import { getBuilderById } from "@/app/builderData"; // Imports the function that fetches one builder from MongoDB by id.
+import { getBuilderById } from "@/app/builderData";
 
-// Tells Next.js this route should read from MongoDB at request time.
-export const dynamic = "force-dynamic"; // Makes every builder detail page load fresh data from MongoDB.
+export const dynamic = "force-dynamic";
 
-export default async function BuilderPage({ // Marks the detail page as async so it can wait for route params and MongoDB.
+export default async function BuilderPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // In this Next.js version, route params are a Promise, so we await them first.
-  const { id } = await params; // Pulls the MongoDB id out of the URL, like /builders/abc123.
+  const { id } = await params;
+  const builder = await getBuilderById(id);
 
-  // Uses the MongoDB ObjectId from the URL to fetch one builder document.
-  const builder = await getBuilderById(id); // Looks up the matching builder document in the database.
+  if (!builder) return notFound();
 
-  // If the id is invalid or no document exists, show Next.js' 404 page.
-  if (!builder) return notFound(); // Stops rendering and shows a 404 when no builder is found.
+  const details = [
+    ["Beds", builder.beds],
+    ["Baths", builder.baths],
+    ["Garage", builder.garage],
+    ["Listing status", builder.listStatus],
+    ["Construction status", builder.conStatus],
+    ["Ceilings", builder.ceilings],
+    ["Developer", builder.developer],
+    ["Address", builder.address],
+  ];
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-        <img
-          src={builder.img}
-          alt={builder.name}
-          className="h-64 w-full object-cover sm:h-96"
-        />
+    <main className="pb-20">
+      <section className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+        <p className="text-center text-xs font-semibold tracking-[0.18em] text-muted uppercase">
+          {builder.location}
+        </p>
+        <h1 className="mt-2 text-center text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
+          {builder.name}
+        </h1>
 
-        <div className="p-5 sm:p-8">
-          <p className="mb-2 text-sm font-semibold tracking-[0.14em] text-accent uppercase">Preconstruction home</p>
-          <h1 className="mb-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            {builder.name}
-          </h1>
-
-          <p className="mb-5 text-2xl font-semibold text-accent">
-            ${builder.price.toLocaleString()}
-          </p>
-
-          <p className="mb-5 max-w-3xl leading-7 text-foreground/80">
-            {builder.desc}
-          </p>
-
-          <p className="mb-7 rounded-xl bg-background px-4 py-3 text-sm font-medium text-muted sm:inline-block sm:text-base">
-            {builder.beds} Bed &bull; {builder.baths} Bath &bull; {builder.sqft} sqft
-          </p>
-
-          <h2 className="mb-3 text-lg font-semibold">Features</h2>
-          <ul className="grid gap-2 pl-5 text-muted marker:text-accent sm:grid-cols-2">
-            {builder.features.map((feature) => (
-              <li key={feature}>{feature}</li>
-            ))}
-          </ul>
+        <div className="mt-8 overflow-hidden rounded-t-2xl">
+          <img
+            src={builder.img}
+            alt={builder.name}
+            className="h-64 w-full object-cover sm:h-96"
+          />
         </div>
-      </div>
+
+        <div className="relative overflow-hidden bg-accent/10 px-6 py-8 sm:px-12 sm:py-11">
+          <div className="absolute inset-y-0 left-0 hidden w-16 bg-[linear-gradient(135deg,transparent_49%,rgba(15,118,110,0.15)_50%,transparent_51%)] bg-[length:18px_18px] sm:block" />
+          <div className="absolute inset-y-0 right-0 hidden w-16 bg-[linear-gradient(135deg,transparent_49%,rgba(15,118,110,0.15)_50%,transparent_51%)] bg-[length:18px_18px] sm:block" />
+
+          <div className="relative mx-auto grid max-w-4xl gap-8 sm:grid-cols-2 sm:gap-12">
+            <div>
+              <h2 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">Overview</h2>
+              <p className="text-sm leading-6 text-foreground/80">{builder.desc}</p>
+            </div>
+            <div className="flex flex-col justify-end">
+              <p className="text-sm font-semibold tracking-[0.14em] text-accent uppercase">Starting from</p>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-foreground">
+                ${builder.price.toLocaleString()}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                {builder.type} homes in {builder.location}, with plans up to {builder.sqft.toLocaleString()} square feet.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid w-full max-w-5xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">{builder.location} details</h2>
+          <p className="mt-5 text-xs font-semibold tracking-[0.14em] text-accent uppercase">The fine art of family living</p>
+          <p className="mt-4 text-sm leading-7 text-foreground/80">{builder.desc}</p>
+
+          {builder.features.length > 0 && (
+            <>
+              <h3 className="mt-8 text-sm font-semibold text-foreground">Highlights</h3>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {builder.features.map((feature) => (
+                  <li key={feature} className="rounded-full bg-accent/10 px-3 py-1 text-sm text-foreground/80">
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+
+        <dl className="self-start border-t border-border">
+          {details.map(([label, value]) => (
+            <div key={label} className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-4 border-b border-border py-3 text-sm">
+              <dt className="font-semibold text-foreground">{label}</dt>
+              <dd className="text-foreground/75">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-accent/10" />
+        <div className="relative grid gap-6 border border-accent/30 bg-surface p-6 shadow-sm sm:grid-cols-3 sm:p-8">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">Pricing and fees</h2>
+            <p className="mt-4 text-sm font-semibold text-foreground">Available unit price</p>
+            <p className="mt-1 text-sm text-muted">From ${builder.price.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Deposit</p>
+            <p className="mt-1 text-sm text-muted">{builder.deposit || "Contact developer"}</p>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Average price per sqft</p>
+            <p className="mt-1 text-sm text-muted">${Math.round(builder.price / builder.sqft).toLocaleString()}</p>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

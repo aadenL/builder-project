@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import type { Builder } from "@/app/builderData";
-import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
+import { useFavorites } from "./context/favorites";
 
 export default function BuilderCard({ builder }: { builder: Builder }) {
-  const [isFavorite, setIsFavorite] = useState(false);
+  // 
+  const {toggleFavorite, isFavorite} = useFavorites();
+
+  // checking if builder._id is already in favorites array
+  const favorite = isFavorite(builder._id);
 
   // e is short for event, the event in this case is a mouse event, meaning the information recieved will be any kind of mouse activity
   function favButton(e: React.MouseEvent) {
@@ -16,17 +20,18 @@ export default function BuilderCard({ builder }: { builder: Builder }) {
     // then it navigates away to the link, it just stops after the button handler runs so you favorite the listing instead of clicking on the link
     e.stopPropagation();
     
-    setIsFavorite((prev) => !prev);
+    toggleFavorite(builder._id);
   }
 
   return (
     <div className="group relative rounded-2x1">
       <button onClick={favButton}
-        className="absolute right-3 top-3 z-10 text-2x1 cursor-pointer" aria-label="Add to favorites"
+        className="absolute right-3 top-3 z-10 cursor-pointer" aria-label={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite}
       >
         <Heart
           size={32}
-          fill={isFavorite ? "red" : "none"}
+          fill={favorite ? "currentColor" : "none"}
+          className={favorite ? "text-red-600" : "text-foreground"}
         />
       </button>
 

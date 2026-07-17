@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Form from "next/form";
 import Link from "next/link";
 import "./globals.css";
+import { FavoritesProvider } from "./context/favorites";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,26 +31,50 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <header className="border-b border-border bg-surface shadow-sm">
-          <nav className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3 sm:px-6" aria-label="Main navigation">
-            <Link href="/" className="text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent">
-              Preconstruction Listings
-            </Link>
-            <Link href="/" className="text-md tracking-tight text-foreground transition-colors hover:text-accent">
-              Home
-            </Link>
-            <Form action="/" className="ml-auto">
-              <input
-                type="search"
-                name="query"
-                placeholder="Search listings"
-                aria-label="Search listings"
-                className="search-input w-40 rounded-md border border-border bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted sm:w-56"
-              />
-            </Form>
-          </nav>
-        </header>
-        {children}
+        <FavoritesProvider>
+          
+          <header className="border-b border-border bg-surface shadow-sm">
+            <nav className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3 sm:px-6" aria-label="Main navigation">
+              <Link href="/" className="text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent">
+                Preconstruction Listings
+              </Link>
+              <Link href="/" className="text-md tracking-tight text-foreground transition-colors hover:text-accent">
+                Home
+              </Link>
+              <Link href="/favorites" className="text-md tracking-tight text-foreground transition-colors hover:text-accent">
+                Favorites
+              </Link>
+              {/* Submitting this form performs a GET request to the home route, for example /?query=Toronto. */}
+              <Form action="/" className="ml-auto flex items-center gap-2">
+              <select
+                name="field"
+                defaultValue="all"
+                aria-label="Search category"
+                  className="search-input rounded-md border border-border bg-background px-2 py-2 text-sm"
+              >
+
+                <option value="all">All fields</option>
+                <option value="location">Location</option>
+                <option value="developer">Developer</option>
+                <option value="name">Listing name</option>
+                <option value="type">Property type</option>
+                <option value="features">Features</option>
+                <option value="tags">Tags</option>
+
+              </select>
+                <input
+                  type="search"
+                  name="query"
+                  placeholder="Search listings"
+                  aria-label="Search listings"
+                  className="search-input w-40 rounded-md border border-border bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted sm:w-56"
+                />
+              </Form>
+            </nav>
+          </header>
+
+          {children}
+        </FavoritesProvider>
       </body>
     </html>
   );

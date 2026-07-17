@@ -58,6 +58,7 @@ type FavoritesContextType = {
     // same thing as earlier for (builderId: string)
     // => means the function returns a boolean
     isFavorite: (builderId: string) => boolean;
+    isLoaded: boolean;
 };
 
 // creates FavoritesContext and tells TypeScript what kind of data it can store
@@ -82,17 +83,26 @@ export function FavoritesProvider({
     // the initial state is favorites = [], and later it will contain builder ids.
     // setFavorites is the function that changes it to contain builder ids. setFavorites(["builder123"]) will update the favorites array to contain that id
     const [favorites, setFavorites] = useState<string[]>([]);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     //loads favorites from localStorage when the app starts. This runs when the app first starts up
     useEffect(() => {
         // KSON.parse converts the strings returned from the line inside back to an array
-        const savedFavorites = JSON.parse(
-            // get the items under favorites from the browser, returns strings
-            localStorage.getItem("favorites") || "[]"
-        );
-        
-        // adds it to the favorites list
-        setFavorites(savedFavorites);
+        try {
+            const savedFavorites = JSON.parse(
+                // get the items under favorites from the browser, returns strings
+                localStorage.getItem("favorites") || "[]"
+            );
+
+            // Only accept the ID list shape this context expects.
+            if (Array.isArray(savedFavorites) && savedFavorites.every((id) => typeof id === "string")) {
+                setFavorites(savedFavorites);
+            }
+        } catch {
+            localStorage.removeItem("favorites");
+        } finally {
+            setIsLoaded(true);
+        }
 
     // the [] means run this once when the component appears
     }, []);
@@ -100,6 +110,8 @@ export function FavoritesProvider({
     // saves the React state to the browser
     useEffect(() => {
         // saves whatever changes to favorites were made, so if the user hearted a new property then it will update
+        if (!isLoaded) return;
+
         localStorage.setItem(
             "favorites",
             // localStorage.setItem() saves data in the browser's local storage. The first argument is the key (the name of the storage item).
@@ -111,7 +123,7 @@ export function FavoritesProvider({
         );
     
     // [favorites] means run this anytime the favorites array changes
-    }, [favorites]);
+    }, [favorites, isLoaded]);
 
     // handles the clicking of the favorite button
     function toggleFavorite(builderId: string) {
@@ -145,6 +157,7 @@ export function FavoritesProvider({
                 toggleFavorite,
                 // gives components access to the function that checks whether a builder has already been favorited
                 isFavorite,
+                isLoaded,
             }}
         >
             {children}
