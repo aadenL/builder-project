@@ -24,7 +24,7 @@ export default function BuilderCard({ builder }: { builder: Builder }) {
   }
 
   return (
-    <div className="group relative rounded-2x1">
+    <div className="group relative rounded-2xl">
       <button onClick={favButton}
         className="absolute right-3 top-3 z-10 cursor-pointer" aria-label={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite}
       >

@@ -73,29 +73,161 @@ const loginSchema = z.object({
     password: z.string().min(1),
 });
 
-//
+// formData contains values submitted in a form format
+/** Example:
+    <form action={signup}>
+    <input name="name" />
+    <input name="email" />
+    <input name="password" type="password" />
+    </form>
+
+    complete signup flow:
+        Read form
+        → validate values
+        → check for existing email
+        → hash password
+        → insert user
+        → create session cookie
+        → redirect to account
+*/
 export async function signup(formData: FormData) {
+    // read and validate the form
+    // safeParse either returns:
+    //  { success: true, data: /* validated data */ }
+    //  { success: false, error: /* validation errors */ }
     const result = signupSchema.safeParse({
+        // reads 3 form fields: name, email, password
+        // passes them all into the Zod signup schema and then validates and transforms them
         name: formData.get("name"),
         email: formData.get("email"),
         password: formData.get("password"),
     });
 
+    // if there's any field that was invalid the result would be false, so it would redirect to signup page with an error
     if (!result.success) {
         redirect("/signup?error=Invalid signup information");
     }
 
+    // extracting all the validated values
     const { name, email, password } = result.data;
+    // connecting to database
     const db = await getDb();
+    // get the "users" collection in the database
+    // <UserDocument> tells TypeScript what each user doc should contain
     const users = db.collection<UserDocument>("users");
 
+    // checking if the email exists in the database
+    // would return either null or the user document
     const existingUser = await users.findOne({ email });
 
+    // if there is an existing document, redirect user to login page with error message
     if (existingUser) {
         redirect("/signup?error=An account already exists");
     }
 
+    // hashing password 
+    // password is the original entered password
+    // 12 is bcrypt's computational cost
+    // passwordHash is what gets stored in MongoDB
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // declares a variable that will hold the MongoDB ID after insertion
     let userId: ObjectId;
+
+    try {
+        // attempts to insert a new document into users
+        // insertOne() returns info about the operation
+        const newAcc = await users.insertOne({
+            // uniquely identifies the user
+            _id: new ObjectId(),
+            name,
+            email,
+            passwordHash,
+            // provides what date the account was created at, records current date and time of account creation
+            createdAt: new Date(),
+        });
+
+        // assigns userId to insertedId, which is the _id of the newly created document
+        userId = newAcc.insertedId;
+    // if you can't insert the new document
+    // some issues could include:
+    /**
+     * Database connection issues
+     * a duplicate email rejected by a unique index
+     * an invalid doc
+     * a temporary MongoDB failure
+     */
+    } catch {
+        // redirect back to login page with error
+        redirect("/signup?error=Could not create account");
+    }
+
+    // converts the MongoDB object to a string and then creates a session containing that ID
+    /**
+     * {
+     *   userId: "mongodb-object-id"
+     * }
+     * the signed JWT is stored in the "session" cookie, the user is now logged in immediately after signup
+     */
+    await createSession(userId.toString());
+    // sends the authenticated user to /account
+    redirect("/account");
+}
+
+// defines login server function
+/**
+ * The login flow is:
+ *  Form → find user → compare password against hash → create cookie → redirect
+ */
+export async function login(formData: FormData) {
+    // reads the submitted email and password and validates them with loginSchema
+    const result = loginSchema.safeParse({
+        email: formData.get("email"),
+        password: formData.get("password"),
+    });
+
+    // if result.success returns false then redirect to login page with error message
+    if (!result.success) {
+        redirect("/login?error=Invalid email or password");
+    }
+
+    // extracting the values of both email and password from the data
+    const { email, password } = result.data;
+
+    // connecting to the database
+    const db = await getDb();
+
+    // await the database connection before running this block of code
+    const user = await db  
+        // connect to the users collection in the database
+        .collection<UserDocument>("users")
+        // checking if the user's email exists in the database
+        .findOne({ email });
+
+    if (!user) {
+        redirect("/login?error=Invalid email or password");
+    }
+
+    // assigning variable to see if the hashed password in the database matches to the entered password
+    const passwordMatches = await bcrypt.compare(
+        // the currently entered password
+        password,
+
+        // the password previously entered that was hashed and stored in the database
+        user.passwordHash,
+    );
+
+    if (!passwordMatches) {
+        redirect("/login?error=Invalid email or password");
+    }
+
+    // Convert the user's _id to a string and create the signed session cookie.
+    await createSession(user._id.toString());
+    // sends the authenticated user to /account
+    redirect("/account")
+}
+
+export async function logout() {
+    await deleteSession();
+    redirect("/login");
 }

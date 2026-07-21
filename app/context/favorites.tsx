@@ -1,178 +1,180 @@
+// This directive makes the file a Client Component. Favorites use localStorage,
+// window events, and React browser hooks, none of which are available on the server.
 "use client";
 
 import {
-    // context is a way to share data between components without having to pass it down manually through prop
-    // it is a global storage area for a specific part of an app, in this case the favorites page
-
-    // createContext creates a shared storage space that components can access without having to pass 
-    // through many diff levels
+    // Creates a shared container that deeply nested components can read.
     createContext,
 
-    // reads data from context 
+    // Describes any valid content placed inside FavoritesProvider.
+    ReactNode,
+
+    // Reads the closest FavoritesContext.Provider value.
     useContext,
 
-    // runs code after React renders a component
-    useEffect,
+    // Reuses the parsed array until the stored JSON string changes.
+    useMemo,
 
-    // useState creates a piece of state that React will remember.
-    // It returns two things:
-    // 1. The current value of the state (favorites)
-    // 2. A function to update that value (setFavorites)
-    // The initial value is an empty array because there are no favorited builders when the app first loads.
-    // When setFavorites is called, React updates the state and re-renders any components that use this value.
-    useState,
-
-    // ReactNode is a TypeScript type that represents anything React can render on the screen.
-    // This includes:
-    // - JSX elements (<div>Hello</div>)
-    // - Components (<BuilderCard />)
-    // - Strings ("Hello")
-    // - Numbers (123)
-    // - Arrays of elements
-    // - null or undefined
-    // In this case, ReactNode is used to type the children prop.
-    // The children prop represents whatever components are placed inside the FavoritesProvider component.
-    // Example:
-    // <FavoritesProvider>
-    //    <BuilderCard />
-    // </FavoritesProvider>
-    //
-    // The <BuilderCard /> becomes the "children" value.
-    ReactNode,
+    // Keeps React synchronized with data stored outside React itself.
+    useSyncExternalStore,
 } from "react";
 
-// creating a TypeScript type that describes what data and functions your favorites context will contain
-// any value that is stored in FavoritesContext must have a favorites array, a toggle function, and a checking function.
-
-// creates a custom TypeScript type called FavoritesContextType, defining the shape of an object
+// This type describes everything components receive from useFavorites().
 type FavoritesContextType = {
-    // favorites must be an array of strings because it will contain builder ids which are stored as strings
+    // The MongoDB listing IDs currently saved in this browser.
     favorites: string[];
 
-    // means create a function called toggleFavorite that recieves a builderId and returns nothing. 
-    // (builderId: string) means the function takes 1 param that is a string
-    // => means the function doesn't return anything, only changes a state
+    // Adds an ID when absent or removes it when already saved.
     toggleFavorite: (builderId: string) => void;
 
-    // means create a function called isFavorite that recieves a builderId and returns a boolean. 
-    // same thing as earlier for (builderId: string)
-    // => means the function returns a boolean
+    // Answers whether one particular listing ID is currently saved.
     isFavorite: (builderId: string) => boolean;
+
+    // Distinguishes the server's empty snapshot from browser data after hydration.
     isLoaded: boolean;
 };
 
-// creates FavoritesContext and tells TypeScript what kind of data it can store
-// createContext creates a shared container where you can put data that many components need
-const FavoritesContext = createContext<
+// The default is undefined so useFavorites can detect incorrect usage outside
+// FavoritesProvider instead of silently returning a fake empty favorites list.
+const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
-    // This context could either contain a FavoritesContextType object or it can be undefined
-    FavoritesContextType | undefined
+// This is the localStorage key. The browser stores data under "favorites".
+const FAVORITES_KEY = "favorites";
 
-// (undefined) at the end means if there is no value provided, use undefined. The value inside <> is the default value.
->(undefined);
+// This custom browser event notifies React about changes made in the current tab.
+const FAVORITES_CHANGED_EVENT = "favorites-changed";
 
-// creating a react component named FavoritesProvider, it wraps other components and gives them access to favorites.
-export function FavoritesProvider({
-    children,
-}: {
-    // this means that this component can contain any valid react content
-    children: ReactNode;
-}) {
-    // creates the main data storage
-    // useState<string[]>([]) means the state is an array, every item in the array must be a string, and to start with an empty array
-    // the initial state is favorites = [], and later it will contain builder ids.
-    // setFavorites is the function that changes it to contain builder ids. setFavorites(["builder123"]) will update the favorites array to contain that id
-    const [favorites, setFavorites] = useState<string[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
+// localStorage only stores strings, so an empty array is represented as JSON text.
+const EMPTY_FAVORITES = "[]";
 
-    //loads favorites from localStorage when the app starts. This runs when the app first starts up
-    useEffect(() => {
-        // KSON.parse converts the strings returned from the line inside back to an array
-        try {
-            const savedFavorites = JSON.parse(
-                // get the items under favorites from the browser, returns strings
-                localStorage.getItem("favorites") || "[]"
-            );
-
-            // Only accept the ID list shape this context expects.
-            if (Array.isArray(savedFavorites) && savedFavorites.every((id) => typeof id === "string")) {
-                setFavorites(savedFavorites);
-            }
-        } catch {
-            localStorage.removeItem("favorites");
-        } finally {
-            setIsLoaded(true);
-        }
-
-    // the [] means run this once when the component appears
-    }, []);
-
-    // saves the React state to the browser
-    useEffect(() => {
-        // saves whatever changes to favorites were made, so if the user hearted a new property then it will update
-        if (!isLoaded) return;
-
-        localStorage.setItem(
-            "favorites",
-            // localStorage.setItem() saves data in the browser's local storage. The first argument is the key (the name of the storage item).
-            // In this case, "favorites" is the label where the data is stored.
-            // The second argument is the value that will be saved. 
-            // localStorage can only store strings, so JSON.stringify() converts the favorites array into a string before saving.
-            // If a "favorites" item already exists, setItem() replaces the old value with the new one.
-            JSON.stringify(favorites)
-        );
-    
-    // [favorites] means run this anytime the favorites array changes
-    }, [favorites, isLoaded]);
-
-    // handles the clicking of the favorite button
-    function toggleFavorite(builderId: string) {
-        // prev is designated as the current favorites array
-        setFavorites((prev) => {
-            // if the builderId is already favorited
-            if (prev.includes(builderId)) {
-                // remove it
-                return prev.filter((id) => id !== builderId);
-            }
-            
-            //if it's not already favorited, the spread operator (...prev) will copy the existing array and add the new id (builderId)
-            return [...prev, builderId];
-        });
+// React calls this function when it wants to subscribe to the external store.
+// callback tells useSyncExternalStore that it should request a fresh snapshot.
+function subscribeToFavorites(callback: () => void) {
+    // Browsers emit a StorageEvent in other open tabs when localStorage changes.
+    function handleStorage(event: StorageEvent) {
+        // Ignore changes to unrelated localStorage keys. When the favorites key
+        // changes, call React's callback so all favorite consumers re-render.
+        if (event.key === FAVORITES_KEY) callback();
     }
 
-    // checking if the builder is already in the favorites list, returns true or false
+    // Listen for favorites changes made by another tab on the same website.
+    window.addEventListener("storage", handleStorage);
+
+    // Listen for the custom event dispatched by this tab's toggleFavorite().
+    window.addEventListener(FAVORITES_CHANGED_EVENT, callback);
+
+    // React calls this cleanup function when it no longer needs the subscription.
+    // Removing both listeners prevents duplicate callbacks and memory leaks.
+    return () => {
+        window.removeEventListener("storage", handleStorage);
+        window.removeEventListener(FAVORITES_CHANGED_EVENT, callback);
+    };
+}
+
+// useSyncExternalStore calls this in the browser whenever it needs current data.
+function getFavoritesSnapshot() {
+    // Return the saved JSON string, or "[]" when nothing has been saved yet.
+    // A string is used as the snapshot because React can compare strings by value;
+    // returning a newly parsed array here would look "new" on every call.
+    return localStorage.getItem(FAVORITES_KEY) ?? EMPTY_FAVORITES;
+}
+
+// Next.js also renders Client Components on the server for the initial HTML.
+function getServerFavoritesSnapshot() {
+    // localStorage does not exist on the server, so begin with an empty JSON array.
+    // React replaces this snapshot with browser storage during hydration.
+    return EMPTY_FAVORITES;
+}
+
+// isLoaded needs a subscription function even though hydration never changes
+// again after the browser takes control, so this returns an empty cleanup function.
+function subscribeToHydration() {
+    return () => {};
+}
+
+// Wrapping the app with this provider makes favorite data/functions available to
+// BuilderCard, FavoriteListings, and any future component that calls useFavorites.
+export function FavoritesProvider({ children }: { children: ReactNode }) {
+    // Subscribe to localStorage as an external data source. The three arguments are:
+    // 1. how to subscribe, 2. how to read in the browser, 3. how to read on the server.
+    // This replaces the previous useEffect + setState implementation and avoids
+    // triggering an additional synchronous state update immediately after rendering.
+    const storedFavorites = useSyncExternalStore(
+        subscribeToFavorites,
+        getFavoritesSnapshot,
+        getServerFavoritesSnapshot,
+    );
+
+    // On the server this returns false; once hydrated in a browser it returns true.
+    // FavoriteListings uses it to show a loading message instead of briefly showing
+    // an incorrect "no favorites" state while browser storage is being restored.
+    const isLoaded = useSyncExternalStore(
+        subscribeToHydration,
+        () => true,
+        () => false,
+    );
+
+    // Convert the JSON string from localStorage into the string array used by the UI.
+    // useMemo avoids parsing it again during renders where the string did not change.
+    const favorites = useMemo(() => {
+        try {
+            // Treat parsed browser data as unknown until its shape is checked.
+            const parsed: unknown = JSON.parse(storedFavorites);
+
+            // Accept only an array in which every value is a string listing ID.
+            // If a user/extension corrupted localStorage, safely use an empty array.
+            return Array.isArray(parsed) && parsed.every((id) => typeof id === "string")
+                ? parsed
+                : [];
+        } catch {
+            // JSON.parse throws for malformed text, so invalid data becomes empty.
+            return [];
+        }
+    // Recalculate only when useSyncExternalStore reports a different JSON string.
+    }, [storedFavorites]);
+
+    // Called when the heart button receives one listing's string ID.
+    function toggleFavorite(builderId: string) {
+        // If the ID exists, filter it out. Otherwise copy the current array with
+        // the spread operator and append the new ID, without mutating the old array.
+        const nextFavorites = favorites.includes(builderId)
+            ? favorites.filter((id) => id !== builderId)
+            : [...favorites, builderId];
+
+        // Convert the array to JSON because localStorage cannot store arrays directly.
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(nextFavorites));
+
+        // The native storage event only fires in other tabs. Dispatch this custom
+        // event so the current tab's subscription also reads the new snapshot.
+        window.dispatchEvent(new Event(FAVORITES_CHANGED_EVENT));
+    }
+
+    // Return true when this listing ID appears in the current favorites array.
     function isFavorite(builderId: string) {
         return favorites.includes(builderId);
     }
 
-    //providing the context, where the info is actually shared
+    // Provide the current data and helper functions to every nested component.
     return (
-        // the previously created FavoritesContext container is empty, .Provider inputs info into the container
         <FavoritesContext.Provider
-            // any component that uses this context can access these 3 things
-            value={{
-                // gives components access to favorites, which is the current array of favorite builders
-                favorites,
-                // gives components access to the function that adds/removes favorite builders
-                toggleFavorite,
-                // gives components access to the function that checks whether a builder has already been favorited
-                isFavorite,
-                isLoaded,
-            }}
+            value={{ favorites, toggleFavorite, isFavorite, isLoaded }}
         >
             {children}
         </FavoritesContext.Provider>
     );
 }
 
+// This custom hook gives components a concise, correctly typed way to read context.
 export function useFavorites() {
+    // Read the closest provider value above the calling component in the React tree.
     const context = useContext(FavoritesContext);
-    
+
+    // A missing value means the component was rendered outside FavoritesProvider.
+    // Throwing gives the developer a clear configuration error immediately.
     if (!context) {
-        throw new Error(
-            "useFavorites must be used inside FavoritesProvider"
-        );
+        throw new Error("useFavorites must be used inside FavoritesProvider");
     }
 
+    // Return all favorites data and helper functions to the calling component.
     return context;
 }
