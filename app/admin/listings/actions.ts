@@ -16,7 +16,7 @@ const listingSchema = z.object({
   location: z.string().trim().min(1),
   address: z.string().trim().min(1),
   type: z.string().trim().min(1),
-  conStatus: z.string().trim().min(1),
+  conStatus: z.enum(["Pre-construction", "Under construction", "Completed"]),
   ceilings: z.string().trim().min(1),
   deposit: z.string().trim().min(1),
 
@@ -40,23 +40,6 @@ const listingSchema = z.object({
   features: z.array(z.string().trim()).default([]),
   tags: z.array(z.string().trim()).default([]),
 });
-
-// takes one string comma separated values and turns them into an array of clean strings
-function commaSeparatedList(value: string) {
-  // return the same inputted value
-  return (
-    value
-      // split the string into an array anywhere there is a comma
-      .split(",")
-
-      // map() goes through every element in the array and returns a new array after trimming it
-      .map((item) => item.trim())
-
-      // filter(Boolean) removes any values in the array where the callback is not true
-      // for example, any empty values are removed
-      .filter(Boolean)
-  );
-}
 
 export async function createListing(formData: FormData) {
   // read the JWT stored in the session cookie
@@ -123,15 +106,9 @@ export async function createListing(formData: FormData) {
     throw new Error("Some listing information is invalid");
   }
 
-  // take features and tags out of result.data and everything else can go in an object called listing
-  // ...listing means everything else, ... is a rest operator
-  const { features, tags, ...listing } = result.data;
-
   // await databse connection then pull collection "builders" and insert something
   const response = await db.collection("builders").insertOne({
-    // insert the ...listing object we just made
-    ...listing,
-
+    // result.data contains every validated listing field, including feature and tag arrays
     ...result.data,
   });
 
@@ -141,5 +118,5 @@ export async function createListing(formData: FormData) {
   // redirect the user to the new listing page they just created
   // .toString() is needed because the insertedId is an ObjectId, and those can't be inserted into urls
   // therefore, it needs to be converted to a string so the url is valid
-  redirect(`/builders/${response.insertedId.toString()}`);
+  redirect(`/admin/listings/${response.insertedId.toString()}/preview`);
 }

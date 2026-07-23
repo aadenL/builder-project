@@ -81,7 +81,27 @@ export default async function NewListingPage() {
               <Input name="location" label="Location" />
               <Input name="address" label="Address" />
               <Input name="type" label="Property type" />
-              <Input name="conStatus" label="Construction status" />
+
+              {/* Limits construction status to the three supported choices. */}
+              <label className="grid gap-2 text-sm font-semibold text-foreground">
+                <span>
+                  Construction status <RequiredMark />
+                </span>
+                <select
+                  name="conStatus"
+                  defaultValue=""
+                  required
+                  className="cursor-pointer rounded-lg border border-border bg-background px-3 py-2.5 font-normal text-foreground"
+                >
+                  {/* The empty option makes the admin actively choose a status. */}
+                  <option value="" disabled>
+                    Select construction status
+                  </option>
+                  <option value="Pre-construction">Pre-construction</option>
+                  <option value="Under construction">Under construction</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </label>
             </div>
           </FormSection>
 
