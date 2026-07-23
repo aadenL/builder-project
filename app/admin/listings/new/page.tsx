@@ -11,6 +11,8 @@ import { getDb } from "@/app/mongodb";
 
 import MultiValueField from "@/app/admin/listings/new/MultiValueField";
 
+import ImageUpload from "@/app/admin/listings/new/imageUpload";
+
 // new listing page
 export default async function NewListingPage() {
   // read the JWT stored in the session cookie
@@ -143,12 +145,7 @@ export default async function NewListingPage() {
             </label>
 
             <div className="mt-5">
-              <Input
-                name="img"
-                label="Image URL"
-                type="url"
-                placeholder="https://example.com/listing-image.jpg"
-              />
+              <ImageUpload />
             </div>
 
             {/* The Server Action separates these comma-separated values into arrays. */}

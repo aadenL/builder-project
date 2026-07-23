@@ -11,7 +11,7 @@ type PreviewPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default async function PreviewPag({ params }: PreviewPageProps) {
+export default async function PreviewPage({ params }: PreviewPageProps) {
   const { id } = await params;
   const session = await getSession();
 

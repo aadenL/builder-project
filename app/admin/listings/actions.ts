@@ -32,10 +32,6 @@ const listingSchema = z.object({
   desc: z.string().trim().min(1),
   listStatus: z.string().trim().min(1),
 
-  // must be a string, with whitespace removed from both sides, and must be a valid url
-  // a valid url looks like: "https://example.com/image.jpg"
-  img: z.string().trim().url(),
-
   // must be a string
   features: z.array(z.string().trim()).default([]),
   tags: z.array(z.string().trim()).default([]),
@@ -73,6 +69,31 @@ export async function createListing(formData: FormData) {
     redirect("/login");
   }
 
+  // get the value submitted by <input name="image" type="file"/>
+  // FormData.get() returns: FormDataEntryValue | null, meaning the result can be a file, string, or null
+  const image = formData.get("image");
+
+  // checks whether the image is actually a File object
+  // also checks if the image size is equal to 0
+  // !(image instanceof File) becomes true when image is a string, null, or some other value
+  if (!(image instanceof File) || image.size === 0) {
+    // throw an error to select an image
+    throw new Error("Please select an image");
+  }
+
+  //
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+  if (!allowedTypes.includes(image.type)) {
+    throw new Error("The image must be a JPG, PNG, or WebP");
+  }
+
+  const maxSize = 5 * 1024 * 1024;
+
+  if (image.size > maxSize) {
+    throw new Error("The image file cannot be larger than 5 MB");
+  }
+
   // because of the way these values are inputted into MongoDB, some of them may have whitespace or be the wrong variable type
   // so the listingSchema makes sure that everything is formatted properly
   // and safeParse makes sure every value is valid, if they are all valid, it returns the parsed data
@@ -95,7 +116,6 @@ export async function createListing(formData: FormData) {
     sqft: formData.get("sqft"),
     desc: formData.get("desc"),
     listStatus: formData.get("listStatus"),
-    img: formData.get("img"),
     features: formData.getAll("features"),
     tags: formData.getAll("tags"),
   });
@@ -106,10 +126,30 @@ export async function createListing(formData: FormData) {
     throw new Error("Some listing information is invalid");
   }
 
-  // await databse connection then pull collection "builders" and insert something
-  const response = await db.collection("builders").insertOne({
-    // result.data contains every validated listing field, including feature and tag arrays
+  // converts the uploaded file to server-side binary data and sores it inside a new MongoDB builder doc
+  // image.arrayBuffer() reads all the bytes from the uploaded File
+  // returns a promise containing an array buffer, so await must be placed in front
+  // an ArrayBuffer represents raw binary data, for an img it contains the actual JPEG, PNG, or WebP bytes, not the filename or URL
+  // Buffer.from() converts the web-standard ArrayBuffer into a Node.js Buffer
+  // Needed because the file arrives though the web-standard File API while MongoDB's Node.js driver stores binary content using Node-compatible binary data
+  const imageBuffer = Buffer.from(await image.arrayBuffer());
+
+  const listingId = new ObjectId();
+
+  await db.collection("builders").insertOne({
+    _id: listingId,
     ...result.data,
+
+    img: `/api/builders/${listingId.toString()}/image`,
+
+    images: [
+      {
+        data: imageBuffer,
+        contentType: image.type,
+        fileName: image.name,
+        size: image.size,
+      },
+    ],
   });
 
   // revalidatePath tells Next.js that the homepage has changed, so throw away the cached version and reload the information
@@ -118,5 +158,5 @@ export async function createListing(formData: FormData) {
   // redirect the user to the new listing page they just created
   // .toString() is needed because the insertedId is an ObjectId, and those can't be inserted into urls
   // therefore, it needs to be converted to a string so the url is valid
-  redirect(`/admin/listings/${response.insertedId.toString()}/preview`);
+  redirect(`/admin/listings/${listingId.toString()}/preview`);
 }
