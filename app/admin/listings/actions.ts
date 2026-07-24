@@ -158,5 +158,5 @@ export async function createListing(formData: FormData) {
   // redirect the user to the new listing page they just created
   // .toString() is needed because the insertedId is an ObjectId, and those can't be inserted into urls
   // therefore, it needs to be converted to a string so the url is valid
-  redirect(`/admin/listings/${listingId.toString()}/preview`);
+  redirect(`/builders/${listingId.toString()}`);
 }

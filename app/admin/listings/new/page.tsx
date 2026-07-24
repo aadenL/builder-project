@@ -1,9 +1,7 @@
 import { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-
-// responsible for receiving the form data and inserting new listings into MongoDB
-import { createListing } from "@/app/admin/listings/actions";
+import ListingFormPreview from "@/app/admin/listings/ListingFormPreview";
 
 // imports the session helper, reads the JWT stored in the session cookie
 import { getSession } from "@/app/auth/session";
@@ -71,7 +69,7 @@ export default async function NewListingPage() {
         </header>
 
         {/* Submitting this form calls the createListing Server Action. */}
-        <form action={createListing} className="mt-8 space-y-6">
+        <ListingFormPreview>
           {/* General information used to identify the development. */}
           <FormSection
             title="Development details"
@@ -166,22 +164,7 @@ export default async function NewListingPage() {
               You can choose multiple existing options or add new ones.
             </p>
           </FormSection>
-
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Link
-              href="/account"
-              className="rounded-lg border border-border px-6 py-3 text-center font-semibold text-foreground transition hover:bg-surface"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              className="cursor-pointer rounded-lg bg-accent px-6 py-3 font-semibold text-white transition hover:opacity-90 active:scale-[0.99]"
-            >
-              Add listing
-            </button>
-          </div>
-        </form>
+        </ListingFormPreview>
       </div>
     </main>
   );
