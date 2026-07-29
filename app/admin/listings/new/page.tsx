@@ -11,6 +11,8 @@ import MultiValueField from "@/app/admin/listings/new/MultiValueField";
 
 import ImageUpload from "@/app/admin/listings/new/imageUpload";
 
+import AddressAutocomplete from "./AddressAutocomplete";
+
 // new listing page
 export default async function NewListingPage() {
   // read the JWT stored in the session cookie
@@ -78,8 +80,7 @@ export default async function NewListingPage() {
             <div className="grid gap-5 sm:grid-cols-2">
               <Input name="name" label="Listing name" />
               <Input name="developer" label="Developer" />
-              <Input name="location" label="Location" />
-              <Input name="address" label="Address" />
+              <AddressAutocomplete />
               <Input name="type" label="Property type" />
 
               {/* Limits construction status to the three supported choices. */}

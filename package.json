@@ -12,6 +12,7 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.24.0",
     "mongodb": "^7.2.0",
     "next": "^16.2.6",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

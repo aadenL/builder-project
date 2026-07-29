@@ -65,10 +65,16 @@ async function AccountNavigation() {
   // Visitors without a valid account session see the authentication links.
   return (
     <>
-      <Link href="/signup" className="rounded-lg border border-border px-3.5 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:text-accent">
+      <Link
+        href="/signup"
+        className="rounded-lg border border-border px-3.5 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:text-accent"
+      >
         Sign up
       </Link>
-      <Link href="/login" className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:opacity-90">
+      <Link
+        href="/login"
+        className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+      >
         Log in
       </Link>
     </>
@@ -85,25 +91,32 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex h-full min-h-full flex-col">
         <FavoritesProvider>
-          
           <header className="border-b border-border bg-surface shadow-sm">
-            <nav className="flex w-full flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto]" aria-label="Main navigation">
+            <nav
+              className="flex w-full flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto]"
+              aria-label="Main navigation"
+            >
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 lg:flex-nowrap">
-                <Link href="/" className="shrink-0 text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent">
+                <Link
+                  href="/"
+                  className="shrink-0 text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent"
+                >
                   Preconstruction Listings
                 </Link>
 
                 {/* Submitting this form performs a GET request to the home route, for example /?query=Toronto. */}
-                <Form action="/" className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+                <Form
+                  action="/"
+                  className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none"
+                >
                   <select
                     name="field"
                     defaultValue="all"
                     aria-label="Search category"
                     className="search-input rounded-md border border-border bg-background px-2 py-2 text-sm"
                   >
-
                     <option value="all">All fields</option>
                     <option value="location">Location</option>
                     <option value="developer">Developer</option>
@@ -111,7 +124,6 @@ export default function RootLayout({
                     <option value="type">Property type</option>
                     <option value="features">Features</option>
                     <option value="tags">Tags</option>
-
                   </select>
                   <input
                     type="search"
@@ -122,7 +134,10 @@ export default function RootLayout({
                   />
                 </Form>
 
-                <Link href="/favorites" className="px-2 py-2 text-sm font-medium text-foreground transition-colors hover:text-accent">
+                <Link
+                  href="/favorites"
+                  className="px-2 py-2 text-sm font-medium text-foreground transition-colors hover:text-accent"
+                >
                   Favorites
                 </Link>
               </div>

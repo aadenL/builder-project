@@ -21,6 +21,16 @@ export type Builder = {
   img: string;
   features: string[];
   tags: string[];
+
+  // mapLocation is an optional field that may or may not be present in the Builder object
+  // ?: means that the field is optional, and it may be undefined
+  mapLocation?: {
+    // type is a string that specifies the type of geometry, in this case "Point"
+    // meaning that the coordinates are a single point on the map
+    type: "Point";
+    // coordinates is an array of two numbers that represent the longitude and latitude of the point
+    coordinates: [number, number];
+  };
 };
 
 const searchFields = [

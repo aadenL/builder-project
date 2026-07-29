@@ -1,5 +1,6 @@
 /* Loads Tailwind's generated utility classes, such as `flex`, `p-4`, and `text-lg`. */
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 /* CSS variables hold the site's reusable, global color values. */
 :root {

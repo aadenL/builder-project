@@ -8,6 +8,10 @@ import { z } from "zod";
 import { getSession } from "@/app/auth/session";
 import { getDb } from "@/app/mongodb";
 
+// imports the geocodeAddress function from the geocode.ts file
+// it is used to convert an address into latitude and longitude coordinates for the map
+import { geocodeAddress } from "@/app/geocode";
+
 // defining the schema requirements for each value
 const listingSchema = z.object({
   // has to be a string, must be trimmed of whitespace on both sides, and must be minimum 1 character
@@ -126,6 +130,10 @@ export async function createListing(formData: FormData) {
     throw new Error("Some listing information is invalid");
   }
 
+  const mapLocation = await geocodeAddress(
+    `${result.data.address}, ${result.data.location}, Ontario, Canada`,
+  );
+
   // converts the uploaded file to server-side binary data and sores it inside a new MongoDB builder doc
   // image.arrayBuffer() reads all the bytes from the uploaded File
   // returns a promise containing an array buffer, so await must be placed in front
@@ -139,6 +147,8 @@ export async function createListing(formData: FormData) {
   await db.collection("builders").insertOne({
     _id: listingId,
     ...result.data,
+
+    mapLocation,
 
     img: `/api/builders/${listingId.toString()}/image`,
 
