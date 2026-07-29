@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Suggestion = {
   placeId: string;
   address: string;
   location: string;
   formattedAddress: string;
+  addressToken: string;
 };
 
 export default function AddressAutocomplete() {
+  // references the visible input so its browser validation can be updated
+  const inputRef = useRef<HTMLInputElement>(null);
+
   // stores the text currently entered into the address field
   // setSearch is the variable that alters search
   const [search, setSearch] = useState("");
@@ -100,6 +104,7 @@ export default function AddressAutocomplete() {
       <label htmlFor="address-search">Address *</label>
 
       <input
+        ref={inputRef}
         id="address-search"
         required
         value={search}
@@ -110,6 +115,11 @@ export default function AddressAutocomplete() {
           setSelected(null);
           setSuggestions([]);
           setError("");
+
+          // typed text is not valid until the user chooses a Geoapify result
+          event.currentTarget.setCustomValidity(
+            "Please select an address from the suggestions.",
+          );
         }}
       />
 
@@ -117,8 +127,8 @@ export default function AddressAutocomplete() {
       <input type="hidden" name="location" value={selected?.location ?? ""} />
       <input
         type="hidden"
-        name="addressPlaceId"
-        value={selected?.placeId ?? ""}
+        name="addressToken"
+        value={selected?.addressToken ?? ""}
       />
 
       {suggestions.length > 0 && (
@@ -136,6 +146,7 @@ export default function AddressAutocomplete() {
                 setSearch(suggestion.formattedAddress);
                 setSuggestions([]);
                 setError("");
+                inputRef.current?.setCustomValidity("");
               }}
             >
               {suggestion.formattedAddress}

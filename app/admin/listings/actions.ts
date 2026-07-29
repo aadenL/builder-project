@@ -8,9 +8,9 @@ import { z } from "zod";
 import { getSession } from "@/app/auth/session";
 import { getDb } from "@/app/mongodb";
 
-// imports the geocodeAddress function from the geocode.ts file
-// it is used to convert an address into latitude and longitude coordinates for the map
-import { geocodeAddress } from "@/app/geocode";
+// imports the signed address verifier from geocode.ts
+// it verifies that the address and coordinates came from the autocomplete route
+import { verifyAddressSelectionToken } from "@/app/geocode";
 
 // defining the schema requirements for each value
 const listingSchema = z.object({
@@ -19,6 +19,7 @@ const listingSchema = z.object({
   developer: z.string().trim().min(1),
   location: z.string().trim().min(1),
   address: z.string().trim().min(1),
+  addressToken: z.string().trim().min(1),
   type: z.string().trim().min(1),
   conStatus: z.enum(["Pre-construction", "Under construction", "Completed"]),
   ceilings: z.string().trim().min(1),
@@ -109,6 +110,7 @@ export async function createListing(formData: FormData) {
     developer: formData.get("developer"),
     location: formData.get("location"),
     address: formData.get("address"),
+    addressToken: formData.get("addressToken"),
     type: formData.get("type"),
     conStatus: formData.get("conStatus"),
     ceilings: formData.get("ceilings"),
@@ -126,12 +128,19 @@ export async function createListing(formData: FormData) {
 
   // if result.success returns false
   if (!result.success) {
-    // throw an error
-    throw new Error("Some listing information is invalid");
+    // identify which fields failed without exposing their submitted values
+    const invalidFields = [
+      ...new Set(
+        result.error.issues.map((issue) => issue.path.join(".") || "form"),
+      ),
+    ];
+
+    throw new Error(`Invalid listing fields: ${invalidFields.join(", ")}`);
   }
 
-  const mapLocation = await geocodeAddress(
-    `${result.data.address}, ${result.data.location}, Ontario, Canada`,
+  // verify the signed Geoapify suggestion instead of geocoding its text again
+  const verifiedAddress = await verifyAddressSelectionToken(
+    result.data.addressToken,
   );
 
   // converts the uploaded file to server-side binary data and sores it inside a new MongoDB builder doc
@@ -143,12 +152,19 @@ export async function createListing(formData: FormData) {
   const imageBuffer = Buffer.from(await image.arrayBuffer());
 
   const listingId = new ObjectId();
+  const listingData = listingSchema
+    .omit({ addressToken: true })
+    .parse(result.data);
 
   await db.collection("builders").insertOne({
     _id: listingId,
-    ...result.data,
+    ...listingData,
 
-    mapLocation,
+    // save Geoapify's verified address and coordinates
+    address: verifiedAddress.address,
+    location: verifiedAddress.location,
+    addressPlaceId: verifiedAddress.placeId,
+    mapLocation: verifiedAddress.mapLocation,
 
     img: `/api/builders/${listingId.toString()}/image`,
 

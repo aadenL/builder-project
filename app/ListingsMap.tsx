@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 type MapListing = {
   _id: string;
   name: string;
+  address: string;
   price: number;
   img: string;
 
@@ -153,6 +154,13 @@ export default function ListingsMap({ listings }: { listings: MapListing[] }) {
         listingLink.style.fontWeight = "700";
         listingLink.style.display = "block";
 
+        // adds the listing's street address below its name
+        const address = document.createElement("p");
+        address.textContent = listing.address;
+        address.style.margin = "4px 0 0";
+        address.style.color = "#64748b";
+        address.style.fontSize = "13px";
+
         // adds the price, creates a paragraph
         const price = document.createElement("p");
         // formats the price as Canadian currency
@@ -167,7 +175,7 @@ export default function ListingsMap({ listings }: { listings: MapListing[] }) {
         price.style.margin = "4px 0 0";
 
         // adds the image and listing information to the popup container
-        popup.append(image, listingLink, price);
+        popup.append(image, listingLink, address, price);
         // connects the popup to the marker, click to open
         marker.bindPopup(popup, {
           maxWidth: 240,
