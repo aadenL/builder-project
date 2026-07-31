@@ -25,7 +25,7 @@ type RouteContext = {
 
 // Next.js calls this function when the route receives a GET request
 // the underscore in _request indicates that the request argument is intentionally unused
-export async function GET(_request: Request, { params }: RouteContext) {
+export async function GET(request: Request, { params }: RouteContext) {
   // get the listing id from the url
   const { id } = await params;
 
@@ -35,6 +35,17 @@ export async function GET(_request: Request, { params }: RouteContext) {
       status: 404,
     });
   }
+
+  // reads the index query parameter from the requested URL, if no index is provided, just use 0
+  const indexText = new URL(request.url).searchParams.get("index") ?? "0";
+
+  // checks whether indexText contains only 1+ digits
+  if (!/^\d+$/.test(indexText)) {
+    return new Response("Image not found", { status: 404 });
+  }
+
+  // assigning index to the the index provided in the URL
+  const index = Number(indexText);
 
   // connect to database
   const db = await getDb();
@@ -47,10 +58,12 @@ export async function GET(_request: Request, { params }: RouteContext) {
       { _id: new ObjectId(id) },
       {
         projection: {
-          images: { $slice: 1 },
+          // skip "index" images and return one image
+          images: { $slice: [index, 1] },
         },
       },
     );
+
   // extract the image from builder
   // the chaining means if builder exists, inspect images, if images exists, retrieve its first item
   // otherwise, return undefined

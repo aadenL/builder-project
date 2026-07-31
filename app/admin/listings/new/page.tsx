@@ -9,7 +9,7 @@ import { getDb } from "@/app/mongodb";
 
 import MultiValueField from "@/app/admin/listings/new/MultiValueField";
 
-import ImageUpload from "@/app/admin/listings/new/imageUpload";
+import ImageUpload from "@/app/admin/listings/new/imageUpload2";
 
 import AddressAutocomplete from "./AddressAutocomplete";
 

@@ -31,6 +31,9 @@ export type Builder = {
     // coordinates is an array of two numbers that represent the longitude and latitude of the point
     coordinates: [number, number];
   };
+
+  imageCount?: number;
+  imageAlts?: string[];
 };
 
 const searchFields = [

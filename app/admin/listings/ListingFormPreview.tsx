@@ -30,7 +30,12 @@ type PreviewData = {
   listStatus: string;
   features: string[];
   tags: string[];
-  imageUrl: string;
+  // changed so it is able to accept multiple images
+  images: {
+    previewUrl: string;
+    alt: string;
+    fileName: string;
+  }[];
 };
 
 export default function ListingFormPreview({
@@ -57,18 +62,67 @@ export default function ListingFormPreview({
     // pulls the Form info from the current event
     const formData = new FormData(event.currentTarget);
 
-    // get the image from the Form data
-    const image = formData.get("image");
+    // Read all entries first so malformed or empty values are rejected instead
+    // of silently being removed from the preview.
+    const imageEntries = formData.getAll("images");
 
-    // image verification
-    // checks if the image is actually a File type
-    // also checks image size
-    if (!(image instanceof File) || image.size === 0) {
-      return;
+    // checking if they didnt submit any images
+    // also rejecting submission when no images were submitted, any entry is not a File, or any file is empty
+    if (
+      imageEntries.length === 0 ||
+      !imageEntries.every(
+        (entry): entry is File => entry instanceof File && entry.size > 0,
+      )
+    ) {
+      throw new Error("Please select valid, non-empty images");
     }
 
-    // makes a temp browser URL for the selected image
-    const imageUrl = URL.createObjectURL(image);
+    // images will only contain valid, non-empty files now
+    const images = imageEntries;
+
+    // image verification
+    // making sure they dont exceed the limit of 5 pictures
+    if (images.length > 5) {
+      throw new Error("You may only upload up to 5 images");
+    }
+
+    // define the allowed file types for images
+    const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+    // define the single image max size
+    const maxImageSize = 5 * 1024 * 1024;
+
+    for (const image of images) {
+      // if there is any image in the set of images submitted that is not of the allowed file types
+      if (!allowedTypes.has(image.type)) {
+        throw new Error(`${image.name} must be a JPG, PNG, or WebP`);
+      }
+
+      // if any image submitted exceeds the 5 MB size limit
+      if (image.size > maxImageSize) {
+        throw new Error(`${image.name} cannot be larger than 5 MB`);
+      }
+    }
+
+    // Alt inputs and files are rendered in the same order by ImageUpload.
+    // .getAll("imageAlt") retrieves all the alt descriptions in order
+    // String() makes sure they are strings and trim() removes surrounding spaces
+    const imageAlts = formData
+      .getAll("imageAlt")
+      .map((value) => String(value).trim());
+
+    // Create one temporary browser URL and preview record for every image.
+    // match the alt text with the correct image
+    // map() converts every File into a preview record
+    // previewUrl: URL.createObjectURL(image) creates a browser URL for the local file
+    // alt: imageAlts[index] ?? "" matches the alt text to the image using their matching indexes
+    // if an alt value is missing, it uses an empty string
+    // fileName: image.name stores the OG filename for possible display/debugging
+    const previewImages = images.map((image, index) => ({
+      previewUrl: URL.createObjectURL(image),
+      alt: imageAlts[index] ?? "",
+      fileName: image.name,
+    }));
 
     // accepts the name of the form field
     // used for fields that have string inputs
@@ -98,32 +152,27 @@ export default function ListingFormPreview({
 
       tags: formData.getAll("tags").map(String),
 
-      imageUrl,
+      // store all the preview images in state
+      images: previewImages,
     });
   }
 
-  // release the temp image URL when the preview closes
+  // Release every temporary image URL when this preview changes or closes.
   useEffect(() => {
-    // declare imageUrl with the url of the preview image
-    // ?. will return undefined instead of throwing an error if imageUrl doesn't exist
-    const imageUrl = preview?.imageUrl;
+    // cleanup for all URLs, if no preview exists it will use an empty array
+    // the cleanup loops over the whole thing.
+    // React runs this cleanup when the preview changes, the user closes the preview, or the compo
+    const previewUrls = preview?.images.map((image) => image.previewUrl) ?? [];
 
     // cleanup function, a function returned from useEffect is its cleanup function
     // react runs it before running effect again because the preview changed
     // or when the component is removed from the page
     return () => {
-      // read the imageUrl
-      // continue only if imageUrl is exists
-      if (imageUrl) {
-        // tells the browser that the temp URL is no longer needed
-        // when this is called earlier: const imageUrl = URL.createObjectURL(image);
-        // the browser keeps access to the underlying file data in memory
-        // by calling revokeObjectURL() it releases that memory, but doesn't delete/remove anything
-        URL.revokeObjectURL(imageUrl);
-      }
+      previewUrls.forEach((previewUrl) => {
+        URL.revokeObjectURL(previewUrl);
+      });
     };
-    // [preview?.imageUrl] tells React to rerun the effect whenever th URL changes
-  }, [preview?.imageUrl]);
+  }, [preview]);
 
   return (
     <form
@@ -169,16 +218,43 @@ export default function ListingFormPreview({
 
             {/* Listing preview. */}
             <article className="overflow-hidden rounded-2xl border border-border bg-surface shadow-xl">
-              {/* Temporary preview of the selected local image. */}
-              <div className="relative h-64 w-full sm:h-96">
-                <Image
-                  src={preview.imageUrl}
-                  alt={preview.name}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                />
-              </div>
+              {/* The first image is primary and receives the large preview. */}
+              {preview.images[0] && (
+                <div className="relative h-64 w-full sm:h-96">
+                  <Image
+                    src={preview.images[0].previewUrl}
+                    alt={preview.images[0].alt || preview.name}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Show the complete ordered gallery below the primary image. */}
+              {preview.images.length > 1 && (
+                <div className="grid grid-cols-2 gap-2 border-b border-border bg-background p-2 sm:grid-cols-4">
+                  {preview.images.map((image, index) => (
+                    <div
+                      key={image.previewUrl}
+                      className="relative h-28 overflow-hidden rounded-lg"
+                    >
+                      <Image
+                        src={image.previewUrl}
+                        alt={image.alt || `${preview.name} image ${index + 1}`}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                      {index === 0 && (
+                        <span className="absolute left-2 top-2 rounded-full bg-accent px-2 py-1 text-xs font-semibold text-white">
+                          Primary
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="p-6 sm:p-8">
                 {/* Listing status. */}

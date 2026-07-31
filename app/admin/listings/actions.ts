@@ -12,6 +12,8 @@ import { getDb } from "@/app/mongodb";
 // it verifies that the address and coordinates came from the autocomplete route
 import { verifyAddressSelectionToken } from "@/app/geocode";
 
+import sharp from "sharp";
+
 // defining the schema requirements for each value
 const listingSchema = z.object({
   // has to be a string, must be trimmed of whitespace on both sides, and must be minimum 1 character
@@ -74,29 +76,40 @@ export async function createListing(formData: FormData) {
     redirect("/login");
   }
 
-  // get the value submitted by <input name="image" type="file"/>
-  // FormData.get() returns: FormDataEntryValue | null, meaning the result can be a file, string, or null
-  const image = formData.get("image");
+  // Read every file submitted by <input name="images" type="file" multiple />.
+  const imageEntries = formData.getAll("images");
 
-  // checks whether the image is actually a File object
-  // also checks if the image size is equal to 0
-  // !(image instanceof File) becomes true when image is a string, null, or some other value
-  if (!(image instanceof File) || image.size === 0) {
-    // throw an error to select an image
-    throw new Error("Please select an image");
+  // Reject an empty submission or any entry that is not a real, non-empty File.
+  // every() uses a type predicate, so TypeScript narrows imageEntries to File[].
+  if (
+    imageEntries.length === 0 ||
+    !imageEntries.every(
+      (entry): entry is File => entry instanceof File && entry.size > 0,
+    )
+  ) {
+    throw new Error("Please select at least one valid image");
   }
 
-  //
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const images = imageEntries;
 
-  if (!allowedTypes.includes(image.type)) {
-    throw new Error("The image must be a JPG, PNG, or WebP");
+  // Repeat the browser's five-image limit on the server because client-side
+  // validation can be bypassed by sending a custom request.
+  if (images.length > 5) {
+    throw new Error("You can upload a maximum of 5 images");
   }
 
+  const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
   const maxSize = 5 * 1024 * 1024;
 
-  if (image.size > maxSize) {
-    throw new Error("The image file cannot be larger than 5 MB");
+  // Validate the MIME type and size of every uploaded image.
+  for (const image of images) {
+    if (!allowedTypes.has(image.type)) {
+      throw new Error(`${image.name} must be a JPG, PNG, or WebP`);
+    }
+
+    if (image.size > maxSize) {
+      throw new Error(`${image.name} cannot be larger than 5 MB`);
+    }
   }
 
   // because of the way these values are inputted into MongoDB, some of them may have whitespace or be the wrong variable type
@@ -143,13 +156,23 @@ export async function createListing(formData: FormData) {
     result.data.addressToken,
   );
 
-  // converts the uploaded file to server-side binary data and sores it inside a new MongoDB builder doc
-  // image.arrayBuffer() reads all the bytes from the uploaded File
-  // returns a promise containing an array buffer, so await must be placed in front
-  // an ArrayBuffer represents raw binary data, for an img it contains the actual JPEG, PNG, or WebP bytes, not the filename or URL
-  // Buffer.from() converts the web-standard ArrayBuffer into a Node.js Buffer
-  // Needed because the file arrives though the web-standard File API while MongoDB's Node.js driver stores binary content using Node-compatible binary data
-  const imageBuffer = Buffer.from(await image.arrayBuffer());
+  // Alt inputs are rendered in the same order as the files, so each description
+  // can be paired with the image at the matching array index.
+  const imageAlts = formData
+    .getAll("imageAlt")
+    .map((value) => String(value).trim());
+
+  // Convert all web File objects into Node.js Buffers that MongoDB can store.
+  // Promise.all reads the independent image files concurrently.
+  const storedImages = await Promise.all(
+    images.map(async (image, index) => ({
+      data: Buffer.from(await image.arrayBuffer()),
+      contentType: image.type,
+      fileName: image.name,
+      size: image.size,
+      alt: imageAlts[index] ?? "",
+    })),
+  );
 
   const listingId = new ObjectId();
   const listingData = listingSchema
@@ -166,16 +189,16 @@ export async function createListing(formData: FormData) {
     addressPlaceId: verifiedAddress.placeId,
     mapLocation: verifiedAddress.mapLocation,
 
-    img: `/api/builders/${listingId.toString()}/image`,
+    img: `/api/builders/${listingId.toString()}/image?index=0`,
 
-    images: [
-      {
-        data: imageBuffer,
-        contentType: image.type,
-        fileName: image.name,
-        size: image.size,
-      },
-    ],
+    // info needed by the gallery without loading the image bytes
+    // imageCount = the amount of stored images
+    imageCount: storedImages.length,
+    // imageAlts = all image alt descriptions mapped to themselves
+    imageAlts: storedImages.map((image) => image.alt),
+
+    // Array order is preserved; the first image is the primary/card image.
+    images: storedImages,
   });
 
   // revalidatePath tells Next.js that the homepage has changed, so throw away the cached version and reload the information
