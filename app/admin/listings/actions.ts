@@ -12,7 +12,36 @@ import { getDb } from "@/app/mongodb";
 // it verifies that the address and coordinates came from the autocomplete route
 import { verifyAddressSelectionToken } from "@/app/geocode";
 
+// importing sharp to resize images before storing them in the database
 import sharp from "sharp";
+
+import { requireAdmin } from "../requireAdmin";
+
+export async function deleteListing(listingId: string) {
+  // the {} are needed because requireAdmin() returns an object with db and userId
+  // the db is needed to delete the listing and the userId is not needed for this func
+  const { db } = await requireAdmin();
+
+  // ObjectId.isValid checks if the listingId is a valid ObjectId
+  if (!ObjectId.isValid(listingId)) {
+    throw new Error("Invalid listing ID");
+  }
+
+  // deleteOne deletes a single document from the collection that matches the filter
+  const result = await db.collection("builders").deleteOne({
+    id: new ObjectId(listingId),
+  });
+
+  // if the deletedCount is not 1, it means the listing was not found so nothing was removed
+  if (result.deletedCount !== 1) {
+    throw new Error("Listing not found");
+  }
+
+  // revalidatePath tells Next.js that the homepage and admin listing pages have changed
+  // so throw away the cached version and reload the info
+  revalidatePath("/");
+  revalidatePath("/admin/listings");
+}
 
 // defining the schema requirements for each value
 const listingSchema = z.object({
@@ -162,17 +191,127 @@ export async function createListing(formData: FormData) {
     .getAll("imageAlt")
     .map((value) => String(value).trim());
 
-  // Convert all web File objects into Node.js Buffers that MongoDB can store.
-  // Promise.all reads the independent image files concurrently.
-  const storedImages = await Promise.all(
-    images.map(async (image, index) => ({
-      data: Buffer.from(await image.arrayBuffer()),
-      contentType: image.type,
-      fileName: image.name,
-      size: image.size,
+  /**
+   * Start of the sharp implementation
+   *
+   * Sharp is a server-side image processing library that allows you to resize, crop,
+   * and convert images to different formats. In this app, it processes each uploaded image before
+   * MongoDB stores it.
+   */
+
+  // setting the max size of one processed image to 3 MB
+  const maximumProcessedImageSize = 3 * 1024 * 1024;
+
+  // Resize and compress each image to reduce its file size before storing it in the database.
+  // leaving room below MongoDB's 16 MB document size limit
+  const maximumTotalImageSize = 14 * 1024 * 1024;
+
+  // defining an array to hold the images
+  const storedImages = [];
+
+  // process one image at a time to avoid using unnecessary memory
+  // images.entries return an array of [index, image] pairs
+  for (const [index, image] of images.entries()) {
+    // converting the File object into a Node.js Buffer so that sharp is able to process it
+    const originalBuffer = Buffer.from(await image.arrayBuffer());
+
+    // resize and convert the image to webp format, which takes less space than jpg or png
+    // data: processedBuffer, info is destructuring the object returned by sharp() into 2 variables
+    // processedBuffer holds the resized image data
+    // info holds the metadata such as the width, heigh, and format of the processed image
+    // await sharp is used to process the image asynchronously
+    // it will alter the image to have a max width and height of 2000 px while maintaining the aspect ratio
+    const { data: processedBuffer, info } = await sharp(originalBuffer, {
+      // autoOrient is automatically used to rotate the image based on its EXIF orientation metadata
+      // EXIF is a standard for storing metadata in image files
+      // it includes info about the camera settings, date and time, and the image orientation
+      autoOrient: true,
+      // limitInputPixels is a feature that allows sharp to process images with a lot of pixels
+      // it is set to 40 million pixes, which allows it to process images up to 8000x5000 px or 5000x8000 px
+      // needed because otherwise sharp will throw an error if the image is too large
+      limitInputPixels: 40_000_000,
+      // .resize resizes the image to fit within defined dimensions while maintaining the aspect ratio
+    })
+      .resize({
+        // resize the image to fit within a 1800x1500 px box while keeping the aspect ration
+        width: 1800,
+        height: 1800,
+
+        // fit is a property that determines how the image is resized to fit within a specified width and height
+        // "inside" means the image will be resized to fit within the specified dimensions of 1800x1800 without cropping
+        // without this, the image may be stretched or distorted, ruining the image quality
+        fit: "inside",
+
+        // withoutEnlargement prevents the image from being enlarged if it's smaller than 1800x1800
+        withoutEnlargement: true,
+        // .webp converts the image to webp format
+      })
+      .webp({
+        // quality determines the compression level of the image
+        // 100 is the highest quality and largest file, 0 is the lowest quality and smallest file
+        quality: 82,
+
+        // effort is the amount of time spent optimizing the image for size and quality
+        // the higher it is, the longer Sharp will take to process the image
+        effort: 4,
+        // .toBuffer returns a promise with the processed image data as a Node.js Buffer
+      })
+      .toBuffer({
+        // resolveWithObject: true means that the promise returned by toBuffer() will resolve
+        // with an Object containing both the processed image and its metadata
+        resolveWithObject: true,
+      });
+
+    if (processedBuffer.length > maximumProcessedImageSize) {
+      throw new Error(
+        `${image.name} is still too large after image processing`,
+      );
+    }
+
+    // remove the original extension from the image name and replace it with .webp
+    // the regex just means "match the last dot in the string and everything after it"
+    const webpFileName = image.name.replace(/\.[^.]+$/, "") + ".webp";
+
+    // storing processed image info into the storedImages array
+    // this is done so that the images as a whole can be stored in the database as an array of objects
+    storedImages.push({
+      // adding the processed image metadata
+      data: processedBuffer,
+
+      // storing the image type
+      contentType: "image.webp",
+
+      // storing the file name with the .webp extension
+      fileName: webpFileName,
+
+      // storing the size of the processed image
+      size: processedBuffer.length,
+
+      // storing the image height and width
+      width: info.width,
+      height: info.height,
+
+      // storing the alt text for the image if it was provided, otherwise leave it empty
       alt: imageAlts[index] ?? "",
-    })),
+    });
+  }
+
+  // check the total size of all processed images to ensure it doesn't exceed the max total image size
+  const totalImageSize = storedImages.reduce(
+    // total is the accumulated size of all imgs processed so far
+    // image is the current image being processed
+    // total + image.size adds the size of the current image to the accumulated total
+    // the 0 at the end is the initial value of total, which is 0 before any imgs are processed
+    (total, image) => total + image.size,
+    0,
   );
+
+  // if the total size of all processed images exceeds the max total image size, throw an error
+  if (totalImageSize > maximumTotalImageSize) {
+    throw new Error(
+      "The combined processed images are too large. Please remove an image or upload smaller images",
+    );
+  }
 
   const listingId = new ObjectId();
   const listingData = listingSchema

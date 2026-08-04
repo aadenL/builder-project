@@ -99,12 +99,21 @@ export default async function AccountPage() {
 
           <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
             {user.isAdmin === true && (
-              <Link
-                href="/admin/listings/new"
-                className="rounded-lg bg-accent px-5 py-2.5 font-semibold text-white transition hover:opacity-90 active:scale-[0.99]"
-              >
-                Add a listing
-              </Link>
+              <>
+                <Link
+                  href="/admin/listings"
+                  className="rounded-lg border border-border px-5 py-2.5 font-semibold"
+                >
+                  Manage listings
+                </Link>
+
+                <Link
+                  href="/admin/listings/new"
+                  className="rounded-lg bg-accent px-5 py-2.5 font-semibold text-white"
+                >
+                  Add a listing
+                </Link>
+              </>
             )}
 
             {/* Submit the logout Server Action. */}
