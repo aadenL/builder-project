@@ -1,7 +1,7 @@
-import BuilderCard from "@/app/BuilderCard";
 import { getBuilders } from "@/app/builderData"; // Imports the function that reads builder listings from MongoDB.
 import Form from "next/form";
-import ListingsMap from "@/app/ListingsMap";
+import Link from "next/link";
+import ListingsExplorer from "@/app/ListingsExplorer";
 
 // Tells Next.js to render this page on each request so it always reads fresh MongoDB data.
 export const dynamic = "force-dynamic"; // Makes the homepage server-render dynamically instead of relying on a static build.
@@ -21,10 +21,40 @@ export default async function Home({
     field?: string | string[];
     price?: string | string[];
     sort?: string | string[];
+    status?: string | string[];
+    type?: string | string[];
+    beds?: string | string[];
+    baths?: string | string[];
   }>;
 }) {
   // searchParams is a prop, must use await because earlier searchParams was declared as Promise
   const params = await searchParams;
+
+  // reads filter values from URL search params and converts the bedroom and bathroom filters into
+  // usable numbers
+  const getStringParameter = (
+    // value may be a singular string, an array of strings, or undefined
+    value: string | string[] | undefined,
+    // fallback is teh default value to use when value is not one string
+    fallback: string,
+    // if value is not a string, return fallback (which is a string)
+  ) => (typeof value === "string" ? value : fallback);
+
+  // extract the filters from the URLs
+  const constructionStatus = getStringParameter(params.status, "all");
+  const propertyType = getStringParameter(params.type, "all");
+  const minimumBedsText = getStringParameter(params.beds, "all");
+  const minimumBathsText = getStringParameter(params.baths, "all");
+
+  // convert the minimumBeds value from a string to a number
+  // if minimumBedsText = "all" then use null, otherwise convert it to a number
+  // basically, if minimumBedsText = "all" then minimumBeds = null
+  const minimumBeds =
+    minimumBedsText === "all" ? null : Number(minimumBedsText);
+
+  // same thing as minimumBeds
+  const minimumBaths =
+    minimumBathsText === "all" ? null : Number(minimumBathsText);
 
   // params returns something like { query: "Stouffville" }, so .query just gets "Stouffville"
   const query = params.query;
@@ -55,12 +85,16 @@ export default async function Home({
   // uses the getBuilders function from builderData to get searchQuery from the MongoDB database
   // await is needed because it takes time to fetch information from the database,
   // telling Next.js to stop and wait for the info to be returned before moving on
-  const builders = await getBuilders(
-    searchQuery,
-    searchField,
+  const builders = await getBuilders({
+    query: searchQuery,
+    field: searchField,
     priceRange,
     sortOrder,
-  );
+    constructionStatus,
+    propertyType,
+    minimumBaths,
+    minimumBeds,
+  });
 
   return (
     <main className="flex min-h-0 w-full flex-1 flex-col">
@@ -68,6 +102,79 @@ export default async function Home({
         action="/"
         className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-4 border-b border-border bg-surface px-4 py-5 sm:px-6 lg:px-8"
       >
+        <input type="hidden" name="query" value={searchQuery} />
+
+        <input type="hidden" name="field" value={searchField} />
+
+        <label className="flex items-center gap-3 text-sm font-semibold">
+          <span>Status</span>
+
+          <select
+            name="status"
+            defaultValue={constructionStatus}
+            className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
+          >
+            <option value="all">Any status</option>
+            <option value="Pre-construction">Pre-construction</option>
+            <option value="Under construction">Under construction</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </label>
+
+        <label className="flex items-center gap-3 text-sm font-semibold">
+          <span>Home type</span>
+
+          <select
+            name="type"
+            defaultValue={propertyType}
+            className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
+          >
+            <option value="all">Any type</option>
+            <option value="Detached">Detached</option>
+            <option value="Townhome">Townhome</option>
+            <option value="Condo">Condo</option>
+          </select>
+        </label>
+
+        <label className="flex items-center gap-3 text-sm font-semibold">
+          <span>Beds</span>
+
+          <select
+            name="beds"
+            defaultValue={minimumBedsText}
+            className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
+          >
+            <option value="all">Any beds</option>
+            <option value="1">1+</option>
+            <option value="2">2+</option>
+            <option value="3">3+</option>
+            <option value="4">4+</option>
+          </select>
+        </label>
+
+        <label className="flex items-center gap-3 text-sm font-semibold">
+          <span>Baths</span>
+
+          <select
+            name="baths"
+            defaultValue={minimumBathsText}
+            className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
+          >
+            <option value="all">Any baths</option>
+            <option value="1">1+</option>
+            <option value="2">2+</option>
+            <option value="3">3+</option>
+            <option value="4">4+</option>
+          </select>
+        </label>
+
+        <Link
+          href="/"
+          className="flex h-10 items-center rounded-md border border-border px-5 text-sm font-semibold"
+        >
+          Clear filters
+        </Link>
+
         <label className="flex items-center gap-3 text-sm font-semibold text-foreground">
           <span>Price range</span>
           <select
@@ -105,21 +212,8 @@ export default async function Home({
 
       {/* Check the number of records returned from MongoDB before choosing the listing grid or empty state. */}
       {builders.length > 0 ? (
-        <div className="grid min-h-0 flex-1 lg:grid-cols-2">
-          {/* Left side: listing cards */}
-          <section className="order-2 px-4 py-6 sm:px-6 lg:order-1 lg:min-h-0 lg:overflow-y-auto lg:px-8">
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {builders.map((builder) => (
-                <BuilderCard key={builder._id} builder={builder} />
-              ))}
-            </div>
-          </section>
-
-          {/* Right side: map fills the remaining visible screen height. */}
-          <aside className="order-1 h-[26rem] min-h-0 lg:order-2 lg:h-full">
-            <ListingsMap listings={builders} />
-          </aside>
-        </div>
+        // ListingsExplorer keeps listing-card and map-marker interactions synchronized.
+        <ListingsExplorer listings={builders} />
       ) : (
         <p className="mx-auto max-w-6xl rounded-xl border border-border bg-surface p-6 text-muted">
           No listings are available yet.

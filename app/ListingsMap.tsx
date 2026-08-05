@@ -19,12 +19,29 @@ type MapListing = {
   };
 };
 
+type ListingsMapProps = {
+  listings: MapListing[];
+  activeListingId: string | null;
+  selectedListingId: string | null;
+  onMarkerHover: (listingId: string | null) => void;
+  onMarkerSelect: (listingId: string | null) => void;
+};
+
 // function receives an array of map listings
-export default function ListingsMap({ listings }: { listings: MapListing[] }) {
+export default function ListingsMap({
+  listings,
+  activeListingId,
+  selectedListingId,
+  onMarkerHover,
+  onMarkerSelect,
+}: ListingsMapProps) {
   // creates a ref that will point to the map's div
   // HTMLDivElement says which element is expected
   // (null) is the initial value
   const container = useRef<HTMLDivElement>(null);
+
+  const mapRef = useRef<import("leaflet").Map | null>(null);
+  const markersRef = useRef(new Map<string, import("leaflet").CircleMarker>());
 
   // runs after React places the map container into the DOM
   useEffect(() => {
@@ -58,6 +75,9 @@ export default function ListingsMap({ listings }: { listings: MapListing[] }) {
       // Leaflet accepts coordinates in [latitude, longitude]
       // 8 is the zoom level
       const leafletMap = L.map(container.current).setView([43.7, -79.4], 8);
+
+      mapRef.current = leafletMap;
+      markersRef.current.clear();
 
       // saves the map for effect cleanup
       // effect cleanup for Leaflet is needed because Leaflet directly creates things that React doesn't know how to remove
@@ -122,6 +142,8 @@ export default function ListingsMap({ listings }: { listings: MapListing[] }) {
 
         // add the marker to the map
         marker.addTo(leafletMap);
+
+        markersRef.current.set(listing._id, marker);
 
         // creates a DOM container for the marker popup
         // a DOM container is an HTML element in the browser that holds other elements or content
@@ -201,6 +223,7 @@ export default function ListingsMap({ listings }: { listings: MapListing[] }) {
           closeTimer = setTimeout(() => {
             if (!clicked) {
               marker.closePopup();
+              onMarkerHover(null);
             }
           }, 250);
         }
@@ -208,11 +231,14 @@ export default function ListingsMap({ listings }: { listings: MapListing[] }) {
         // temporarily show the popup when the marker is hovered
         marker.on("mouseover", () => {
           cancelClose();
+          onMarkerHover(listing._id);
           marker.openPopup();
         });
 
         // schedule closing instead of making the popup disappear immediately
-        marker.on("mouseout", scheduleClose);
+        marker.on("mouseout", () => {
+          scheduleClose();
+        });
 
         // keep the popup open while the cursor is over its content
         popup.addEventListener("mouseenter", cancelClose);
@@ -222,6 +248,7 @@ export default function ListingsMap({ listings }: { listings: MapListing[] }) {
         marker.on("click", () => {
           cancelClose();
           clicked = true;
+          onMarkerSelect(listing._id);
           marker.openPopup();
         });
 
@@ -256,12 +283,60 @@ export default function ListingsMap({ listings }: { listings: MapListing[] }) {
     return () => {
       // stops an unfinished async setup
       cancelled = true;
+
+      markersRef.current.clear();
+      mapRef.current = null;
+
       // removes the Leaflet map and the event listeneres if it was created
       map?.remove();
     };
     // recreates the map whenever the listings array changes
     // [listings] is a dependancy array
   }, [listings]);
+
+  useEffect(() => {
+    // Return every marker to its normal appearance.
+    markersRef.current.forEach((marker) => {
+      marker.setRadius(8);
+
+      marker.setStyle({
+        color: "#ffffff",
+        weight: 2,
+        fillColor: "#0f766e",
+        fillOpacity: 1,
+      });
+    });
+
+    if (!activeListingId) {
+      mapRef.current?.closePopup();
+      return;
+    }
+
+    const activeMarker = markersRef.current.get(activeListingId);
+
+    if (!activeMarker) {
+      return;
+    }
+
+    // Highlight the marker matching the active card.
+    activeMarker.setRadius(11);
+
+    activeMarker.setStyle({
+      color: "#ffffff",
+      weight: 3,
+      fillColor: "#14b8a6",
+      fillOpacity: 1,
+    });
+
+    activeMarker.openPopup();
+
+    // Only move the map after a click, not every hover.
+    if (selectedListingId === activeListingId) {
+      mapRef.current?.panTo(activeMarker.getLatLng(), {
+        animate: true,
+      });
+    }
+  }, [activeListingId, selectedListingId]);
 
   // connects the DOM element to the container.current
   return (

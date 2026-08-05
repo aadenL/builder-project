@@ -46,6 +46,17 @@ const searchFields = [
   "tags",
 ] as const;
 
+export type ListingFilters = {
+  query?: string;
+  field?: string;
+  priceRange?: string;
+  sortOrder?: string;
+  constructionStatus?: string;
+  propertyType?: string;
+  minimumBeds?: number | null;
+  minimumBaths?: number | null;
+};
+
 type SearchField = (typeof searchFields)[number] | "all";
 
 function isSearchField(field: string): field is SearchField {
@@ -71,12 +82,16 @@ function serializeBuilder(
   };
 }
 
-export async function getBuilders(
+export async function getBuilders({
   query = "",
   field = "",
   priceRange = "all",
   sortOrder = "default",
-) {
+  constructionStatus = "all",
+  propertyType = "all",
+  minimumBeds = null,
+  minimumBaths = null,
+}: ListingFilters = {}) {
   // connect to the database
   const db = await getDb();
 
@@ -181,34 +196,53 @@ export async function getBuilders(
 
   // create the price filter
   // Document = {} means that the priceFilter is a MongoDB doc and it starts as an empty object
-  const priceFilter: Document = {};
+  const listingFilter: Document = {};
 
   // if the priceRange is set to the under-750k tag
   if (priceRange === "under-750k") {
     // set the filter to only return preconstructions that are less than $750,000
     // priceFilter.price is the field in the MongoDB collection that is being filtered
     // $lt is a MongoDB operator that means "less than"
-    priceFilter.price = { $lt: 750000 };
+    listingFilter.price = { $lt: 750000 };
   }
 
   if (priceRange === "750k-1m") {
     // $gte is a MongoDB operator that means "greater than or equal to"
     // $lte is a MongoDB operator that means "less than or equal to"
-    priceFilter.price = { $gte: 750000, $lte: 1000000 };
+    listingFilter.price = { $gte: 750000, $lte: 1000000 };
   }
 
   if (priceRange === "over-1m") {
-    priceFilter.price = { $gt: 1000000 };
+    listingFilter.price = { $gt: 1000000 };
+  }
+
+  // filter by construction status
+  if (constructionStatus !== "all") {
+    listingFilter.conStatus = constructionStatus;
+  }
+
+  // filter by property type
+  if (propertyType !== "all") {
+    listingFilter.type = propertyType;
+  }
+
+  if (minimumBeds !== null && Number.isFinite(minimumBeds)) {
+    listingFilter.beds = { $gte: minimumBeds };
+  }
+
+  // filter by minimum bathrooms
+  if (minimumBaths !== null && Number.isFinite(minimumBaths)) {
+    listingFilter.baths = { $gte: minimumBaths };
   }
 
   // if Object.keys(priceFilter).length > 0, meaning that the priceFilter object has at least one key
   // meaning the user selected the price to be filtered by one of the 3 options
-  if (Object.keys(priceFilter).length > 0) {
+  if (Object.keys(listingFilter).length > 0) {
     // push the price filter into the pipeline
     pipeline.push({
       // $match filters the docs in the MongoDB collection based on the specified criteria
       // in this case, the criteria is the priceFilter object that was created above
-      $match: priceFilter,
+      $match: listingFilter,
     });
   }
 

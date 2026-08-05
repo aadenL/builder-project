@@ -5,9 +5,21 @@ import type { Builder } from "@/app/builderData";
 import { Heart } from "lucide-react";
 import { useFavorites } from "./context/favorites";
 
-export default function BuilderCard({ builder }: { builder: Builder }) {
-  // 
-  const {toggleFavorite, isFavorite} = useFavorites();
+type BuilderCardProps = {
+  builder: Builder;
+  active?: boolean;
+  onHover?: (listingId: string | null) => void;
+  onSelect?: (listingId: string) => void;
+};
+
+export default function BuilderCard({
+  builder,
+  active = false,
+  onHover,
+  onSelect,
+}: BuilderCardProps) {
+  //
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   // checking if builder._id is already in favorites array
   const favorite = isFavorite(builder._id);
@@ -19,14 +31,17 @@ export default function BuilderCard({ builder }: { builder: Builder }) {
     // stopPropogation stops the event from bubbling upward, meaning instead of the button being clicked and the button handler running then the link handler running
     // then it navigates away to the link, it just stops after the button handler runs so you favorite the listing instead of clicking on the link
     e.stopPropagation();
-    
+
     toggleFavorite(builder._id);
   }
 
   return (
     <div className="group relative rounded-2xl">
-      <button onClick={favButton}
-        className="absolute right-3 top-3 z-10 cursor-pointer" aria-label={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite}
+      <button
+        onClick={favButton}
+        className="absolute right-3 top-3 z-10 cursor-pointer"
+        aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+        aria-pressed={favorite}
       >
         <Heart
           size={32}
@@ -40,7 +55,6 @@ export default function BuilderCard({ builder }: { builder: Builder }) {
         className="group block rounded-2xl focus-visible:outline-none"
       >
         <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-md">
-
           <div className="h-40 w-full shrink-0">
             <img
               src={builder.img}
@@ -59,14 +73,17 @@ export default function BuilderCard({ builder }: { builder: Builder }) {
             </p>
 
             <p className="mb-3 text-sm font-medium text-muted">
-              {builder.beds} Bed &bull; {builder.baths} Bath &bull; {builder.sqft} sqft
+              {builder.beds} Bed &bull; {builder.baths} Bath &bull;{" "}
+              {builder.sqft} sqft
             </p>
 
             <p className="line-clamp-2 text-sm leading-6 text-foreground/80">
               {builder.desc}
             </p>
 
-            <p className="mt-3 text-sm font-medium text-accent">View listing <span aria-hidden="true">→</span></p>
+            <p className="mt-3 text-sm font-medium text-accent">
+              View listing <span aria-hidden="true">→</span>
+            </p>
           </div>
         </article>
       </Link>
