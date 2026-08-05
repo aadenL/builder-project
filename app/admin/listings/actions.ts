@@ -73,6 +73,81 @@ const listingSchema = z.object({
   tags: z.array(z.string().trim()).default([]),
 });
 
+const updateListingSchema = listingSchema.omit({
+  address: true,
+  location: true,
+  addressToken: true,
+});
+
+function splitCommaSeparated(value: FormDataEntryValue | null): string[] {
+  return [
+    ...new Set(
+      String(value ?? "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+  ];
+}
+
+export async function updateListing(listingId: string, formData: FormData) {
+  const { db } = await requireAdmin();
+
+  if (!ObjectId.isValid(listingId)) {
+    throw new Error("Invalid listing ID");
+  }
+
+  const result = updateListingSchema.safeParse({
+    name: formData.get("name"),
+    developer: formData.get("developer"),
+    type: formData.get("type"),
+    conStatus: formData.get("conStatus"),
+    ceilings: formData.get("ceilings"),
+    deposit: formData.get("deposit"),
+    price: formData.get("price"),
+    beds: formData.get("beds"),
+    baths: formData.get("baths"),
+    garage: formData.get("garage"),
+    sqft: formData.get("sqft"),
+    desc: formData.get("desc"),
+    listStatus: formData.get("listStatus"),
+
+    features: splitCommaSeparated(formData.get("features")),
+
+    tags: splitCommaSeparated(formData.get("tags")),
+  });
+
+  if (!result.success) {
+    const invalidFields = [
+      ...new Set(
+        result.error.issues.map((issue) => issue.path.join(".") || "form"),
+      ),
+    ];
+
+    throw new Error(`Invalid listing fields: ${invalidFields.join(", ")}`);
+  }
+
+  const updateResult = await db.collection("builders").updateOne(
+    {
+      _id: new ObjectId(listingId),
+    },
+    {
+      $set: {
+        ...result.data,
+
+        updatedAt: new Date(),
+      },
+    },
+  );
+
+  revalidatePath("/");
+  revalidatePath("/admin/listings");
+  revalidatePath(`/builders${listingId}`);
+  revalidatePath(`/admin/listings.${listingId}/edit`);
+
+  redirect(`/builders/${listingId}`);
+}
+
 export async function createListing(formData: FormData) {
   // read the JWT stored in the session cookie
   const session = await getSession();
