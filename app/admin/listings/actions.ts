@@ -29,7 +29,7 @@ export async function deleteListing(listingId: string) {
 
   // deleteOne deletes a single document from the collection that matches the filter
   const result = await db.collection("builders").deleteOne({
-    id: new ObjectId(listingId),
+    _id: new ObjectId(listingId),
   });
 
   // if the deletedCount is not 1, it means the listing was not found so nothing was removed
@@ -140,10 +140,14 @@ export async function updateListing(listingId: string, formData: FormData) {
     },
   );
 
+  if (updateResult.matchedCount !== 1) {
+    throw new Error("Listing not found");
+  }
+
   revalidatePath("/");
   revalidatePath("/admin/listings");
-  revalidatePath(`/builders${listingId}`);
-  revalidatePath(`/admin/listings.${listingId}/edit`);
+  revalidatePath(`/builders/${listingId}`);
+  revalidatePath(`/admin/listings/${listingId}/edit`);
 
   redirect(`/builders/${listingId}`);
 }

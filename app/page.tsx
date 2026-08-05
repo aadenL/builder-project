@@ -43,18 +43,13 @@ export default async function Home({
   // extract the filters from the URLs
   const constructionStatus = getStringParameter(params.status, "all");
   const propertyType = getStringParameter(params.type, "all");
-  const minimumBedsText = getStringParameter(params.beds, "all");
-  const minimumBathsText = getStringParameter(params.baths, "all");
+  const bedsText = getStringParameter(params.beds, "all");
+  const bathsText = getStringParameter(params.baths, "all");
 
-  // convert the minimumBeds value from a string to a number
-  // if minimumBedsText = "all" then use null, otherwise convert it to a number
-  // basically, if minimumBedsText = "all" then minimumBeds = null
-  const minimumBeds =
-    minimumBedsText === "all" ? null : Number(minimumBedsText);
+  // Convert selected counts to numbers; "all" means no bed or bath filter.
+  const beds = bedsText === "all" ? null : Number(bedsText);
 
-  // same thing as minimumBeds
-  const minimumBaths =
-    minimumBathsText === "all" ? null : Number(minimumBathsText);
+  const baths = bathsText === "all" ? null : Number(bathsText);
 
   // params returns something like { query: "Stouffville" }, so .query just gets "Stouffville"
   const query = params.query;
@@ -92,8 +87,8 @@ export default async function Home({
     sortOrder,
     constructionStatus,
     propertyType,
-    minimumBaths,
-    minimumBeds,
+    baths,
+    beds,
   });
 
   return (
@@ -141,14 +136,16 @@ export default async function Home({
 
           <select
             name="beds"
-            defaultValue={minimumBedsText}
+            defaultValue={bedsText}
             className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
           >
             <option value="all">Any beds</option>
-            <option value="1">1+</option>
-            <option value="2">2+</option>
-            <option value="3">3+</option>
-            <option value="4">4+</option>
+            <option value="1">1 bed</option>
+            <option value="2">2 beds</option>
+            <option value="3">3 beds</option>
+            <option value="4">4 beds</option>
+            <option value="5">5 beds</option>
+            <option value="6">6+ beds</option>
           </select>
         </label>
 
@@ -157,14 +154,16 @@ export default async function Home({
 
           <select
             name="baths"
-            defaultValue={minimumBathsText}
+            defaultValue={bathsText}
             className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
           >
             <option value="all">Any baths</option>
-            <option value="1">1+</option>
-            <option value="2">2+</option>
-            <option value="3">3+</option>
-            <option value="4">4+</option>
+            <option value="1">1 bath</option>
+            <option value="2">2 baths</option>
+            <option value="3">3 baths</option>
+            <option value="4">4 baths</option>
+            <option value="5">5 baths</option>
+            <option value="6">6+ baths</option>
           </select>
         </label>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { Builder } from "@/app/builderData";
 import { Heart } from "lucide-react";
 import { useFavorites } from "./context/favorites";
@@ -36,7 +37,11 @@ export default function BuilderCard({
   }
 
   return (
-    <div className="group relative rounded-2xl">
+    <div
+      className="group relative rounded-2xl"
+      onMouseEnter={() => onHover?.(builder._id)}
+      onMouseLeave={() => onHover?.(null)}
+    >
       <button
         onClick={favButton}
         className="absolute right-3 top-3 z-10 cursor-pointer"
@@ -52,13 +57,22 @@ export default function BuilderCard({
 
       <Link
         href={`/builders/${builder._id}`}
+        onClick={() => onSelect?.(builder._id)}
+        onFocus={() => onHover?.(builder._id)}
+        onBlur={() => onHover?.(null)}
         className="group block rounded-2xl focus-visible:outline-none"
       >
-        <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-md">
-          <div className="h-40 w-full shrink-0">
-            <img
+        <article
+          className={`relative flex h-full flex-col overflow-hidden rounded-xl border bg-surface shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-md ${
+            active ? "border-accent ring-2 ring-accent/20" : "border-border"
+          }`}
+        >
+          <div className="relative h-40 w-full shrink-0">
+            <Image
               src={builder.img}
               alt={builder.name}
+              fill
+              sizes="(min-width: 1280px) 17vw, (min-width: 640px) 25vw, 100vw"
               className="h-full w-full object-cover"
             />
           </div>

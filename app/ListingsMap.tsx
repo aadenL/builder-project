@@ -52,6 +52,7 @@ export default function ListingsMap({
     // stores the Leaflet map so it can be removed later
     // the import("leaflet").Map references Leaflet's Map TypeScript type w/o loading Leaflet immediately
     let map: import("leaflet").Map | undefined;
+    const markers = markersRef.current;
 
     // dynamically load Leaflet in the browser
     async function createMap() {
@@ -77,7 +78,7 @@ export default function ListingsMap({
       const leafletMap = L.map(container.current).setView([43.7, -79.4], 8);
 
       mapRef.current = leafletMap;
-      markersRef.current.clear();
+      markers.clear();
 
       // saves the map for effect cleanup
       // effect cleanup for Leaflet is needed because Leaflet directly creates things that React doesn't know how to remove
@@ -143,7 +144,7 @@ export default function ListingsMap({
         // add the marker to the map
         marker.addTo(leafletMap);
 
-        markersRef.current.set(listing._id, marker);
+        markers.set(listing._id, marker);
 
         // creates a DOM container for the marker popup
         // a DOM container is an HTML element in the browser that holds other elements or content
@@ -284,7 +285,7 @@ export default function ListingsMap({
       // stops an unfinished async setup
       cancelled = true;
 
-      markersRef.current.clear();
+      markers.clear();
       mapRef.current = null;
 
       // removes the Leaflet map and the event listeneres if it was created
@@ -292,7 +293,7 @@ export default function ListingsMap({
     };
     // recreates the map whenever the listings array changes
     // [listings] is a dependancy array
-  }, [listings]);
+  }, [listings, onMarkerHover, onMarkerSelect]);
 
   useEffect(() => {
     // Return every marker to its normal appearance.

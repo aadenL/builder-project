@@ -53,8 +53,8 @@ export type ListingFilters = {
   sortOrder?: string;
   constructionStatus?: string;
   propertyType?: string;
-  minimumBeds?: number | null;
-  minimumBaths?: number | null;
+  beds?: number | null;
+  baths?: number | null;
 };
 
 type SearchField = (typeof searchFields)[number] | "all";
@@ -89,8 +89,8 @@ export async function getBuilders({
   sortOrder = "default",
   constructionStatus = "all",
   propertyType = "all",
-  minimumBeds = null,
-  minimumBaths = null,
+  beds = null,
+  baths = null,
 }: ListingFilters = {}) {
   // connect to the database
   const db = await getDb();
@@ -226,13 +226,12 @@ export async function getBuilders({
     listingFilter.type = propertyType;
   }
 
-  if (minimumBeds !== null && Number.isFinite(minimumBeds)) {
-    listingFilter.beds = { $gte: minimumBeds };
+  if (beds !== null && Number.isFinite(beds)) {
+    listingFilter.beds = beds >= 6 ? { $gte: 6 } : beds;
   }
 
-  // filter by minimum bathrooms
-  if (minimumBaths !== null && Number.isFinite(minimumBaths)) {
-    listingFilter.baths = { $gte: minimumBaths };
+  if (baths !== null && Number.isFinite(baths)) {
+    listingFilter.baths = baths >= 6 ? { $gte: 6 } : baths;
   }
 
   // if Object.keys(priceFilter).length > 0, meaning that the priceFilter object has at least one key
