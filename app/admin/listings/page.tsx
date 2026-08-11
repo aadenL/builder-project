@@ -19,8 +19,6 @@ export default async function adminListingsPage() {
           price: 1,
           img: 1,
           imageCount: 1,
-
-          images: -1,
         },
       },
     )
@@ -96,7 +94,7 @@ export default async function adminListingsPage() {
                   <form action={deleteListingWithId}>
                     <button
                       type="submit"
-                      className="rounded-lg border border-red-500 px-4 py-2 text-sm font-semibold text-red-600"
+                      className="rounded-lg border border-red-500 px-4 py-2 text-sm font-semibold text-red-600 cursor-pointer"
                     >
                       Delete
                     </button>

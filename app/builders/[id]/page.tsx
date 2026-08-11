@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBuilderById } from "@/app/builderData";
 import ListingGallery from "@/app/api/builders/[id]/ListingGallery";
+import CalBooking from "@/app/CalBooking";
 
 export const dynamic = "force-dynamic";
 
@@ -147,6 +148,28 @@ export default async function BuilderPage({
             </p>
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-accent">
+            Pre-Construction Consultation
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold text-foreground">
+            Schedule a property tour
+          </h2>
+
+          <p className="mt-2 text-muted">
+            Select an available date and time to view {builder.name}.
+          </p>
+        </div>
+
+        <CalBooking
+          listingId={builder._id}
+          listingName={builder.name}
+          listingAddress={builder.address}
+        />
       </section>
     </main>
   );

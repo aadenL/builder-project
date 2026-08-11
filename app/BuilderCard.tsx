@@ -72,6 +72,7 @@ export default function BuilderCard({
               src={builder.img}
               alt={builder.name}
               fill
+              unoptimized
               sizes="(min-width: 1280px) 17vw, (min-width: 640px) 25vw, 100vw"
               className="h-full w-full object-cover"
             />

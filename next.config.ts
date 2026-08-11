@@ -1,7 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "prodlisting.livabl.com",
+        port: "",
+        pathname: "/imageSponsors/**",
+        search: "",
+      },
+    ],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "26mb",

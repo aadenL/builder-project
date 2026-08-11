@@ -9,22 +9,32 @@ if (!uri) {
     throw new Error("Missing MONGODB_URI in .env.local"); // Gives a clear error if the connection string is missing.
 }
 
-// Creates the MongoDB client once using the Atlas connection string.
-const client = new MongoClient(uri); // Builds the MongoDB client from your Atlas URI.
+const mongoUri: string = uri;
 
-// Stores the active connection Promise so hot reloads/requests can reuse the same connection.
-let clientPromise: Promise<MongoClient> | null = null; // Starts empty until the first database request happens.
+// Keep the connection promise on globalThis so Next.js development hot reloads do
+// not create competing MongoClient instances while replacing server modules.
+const globalForMongo = globalThis as typeof globalThis & {
+    mongoClientPromise?: Promise<MongoClient>;
+};
+
+function getClientPromise() {
+    if (!globalForMongo.mongoClientPromise) {
+        const client = new MongoClient(mongoUri);
+        globalForMongo.mongoClientPromise = client.connect().catch((error) => {
+            // Allow a later request to retry if the initial connection fails.
+            delete globalForMongo.mongoClientPromise;
+            throw error;
+        });
+    }
+
+    return globalForMongo.mongoClientPromise;
+}
 
 //create function getDb
 //whole function in total means connect to MongoDB Atlas and give access to the builder-project database.
 export async function getDb() {
-    // Only connect the first time the app actually needs the database.
-    if (!clientPromise) { // Checks whether a MongoDB connection has already been started.
-        clientPromise = client.connect(); // Starts the connection and saves the Promise for reuse.
-    }
-
     //opens the connection to MongoDB
-    const connectedClient = await clientPromise; // Waits for the MongoDB client to finish connecting.
+    const connectedClient = await getClientPromise(); // Waits for the shared MongoDB client to connect.
 
     //returns the database named "builder-project" 
     return connectedClient.db("builder-project"); // Gives the app access to the builder-project database.
