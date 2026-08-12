@@ -157,12 +157,8 @@ export default async function BuilderPage({
           </p>
 
           <h2 className="mt-2 text-3xl font-bold text-foreground">
-            Schedule a property tour
+            Schedule a Consultation
           </h2>
-
-          <p className="mt-2 text-muted">
-            Select an available date and time to view {builder.name}.
-          </p>
         </div>
 
         <CalBooking

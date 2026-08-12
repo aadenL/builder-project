@@ -140,6 +140,13 @@ export default function RootLayout({
                 >
                   Favorites
                 </Link>
+
+                <Link
+                  href="/contact"
+                  className="px-2 py-2 text-sm font-medium text-foreground transition-colors hover:text-accent"
+                >
+                  Contact
+                </Link>
               </div>
 
               <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-0 lg:justify-self-end">
