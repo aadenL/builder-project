@@ -15,12 +15,7 @@ export default function ContactPage() {
             Get in touch
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">Contact me</h1>
-
-          <p className="mt-3 max-w-xl text-sm leading-6 text-white/80">
-            Have a question about a listing or private property viewing? Contact
-            me and I’ll get back to you.
-          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight">Contact us</h1>
         </div>
 
         <div className="grid gap-4 p-6 sm:p-8">
