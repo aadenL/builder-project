@@ -76,25 +76,25 @@ export default async function adminListingsPage() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
                   <Link
                     href={`/builders/${listingId}`}
-                    className="rounded-lg border border-border px-4 py-2 text-sm font-semibold"
+                    className="rounded-lg border border-border px-3 py-2 text-center text-sm font-semibold sm:px-4"
                   >
                     View
                   </Link>
 
                   <Link
                     href={`/admin/listings/${listingId}/edit`}
-                    className="rounded-lg border border-border px-4 py-2 text-sm font-semibold"
+                    className="rounded-lg border border-border px-3 py-2 text-center text-sm font-semibold sm:px-4"
                   >
                     Edit
                   </Link>
 
-                  <form action={deleteListingWithId}>
+                  <form action={deleteListingWithId} className="contents sm:block">
                     <button
                       type="submit"
-                      className="rounded-lg border border-red-500 px-4 py-2 text-sm font-semibold text-red-600 cursor-pointer"
+                      className="w-full cursor-pointer rounded-lg border border-red-500 px-3 py-2 text-sm font-semibold text-red-600 sm:px-4"
                     >
                       Delete
                     </button>

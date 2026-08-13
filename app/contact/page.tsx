@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, Phone } from "lucide-react";
+import { Mail } from "lucide-react";
 
 export const metadata = {
   title: "Contact | Preconstruction Listings",
@@ -27,10 +27,10 @@ export default function ContactPage() {
               <Mail size={20} aria-hidden="true" />
             </span>
 
-            <span>
+            <span className="min-w-0">
               <span className="block text-sm font-semibold">Email</span>
 
-              <span className="block text-sm text-muted">
+              <span className="block break-all text-sm text-muted">
                 jenyau888@gmail.com
               </span>
             </span>

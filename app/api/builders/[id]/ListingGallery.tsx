@@ -70,7 +70,7 @@ export default function ListingGallery({
       className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-border bg-surface"
     >
       <div
-        className="relative w-full bg-black transition-[aspect-ratio] duration-200"
+        className="relative max-h-[70svh] w-full bg-black transition-[aspect-ratio] duration-200 sm:max-h-none"
         style={{ aspectRatio: activeAspectRatio }}
       >
         <Image
@@ -95,7 +95,7 @@ export default function ListingGallery({
               type="button"
               onClick={showPrevious}
               aria-label="Show previous image"
-              className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+              className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 sm:left-3 sm:h-11 sm:w-11"
             >
               <ChevronLeft aria-hidden="true" />
             </button>
@@ -104,7 +104,7 @@ export default function ListingGallery({
               type="button"
               onClick={showNext}
               aria-label="Show next image"
-              className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 sm:right-3 sm:h-11 sm:w-11"
             >
               <ChevronRight aria-hidden="true" />
             </button>
@@ -125,7 +125,7 @@ export default function ListingGallery({
               onClick={() => setActiveIndex(index)}
               aria-label={`Show image ${index + 1}`}
               aria-current={activeIndex === index ? "true" : undefined}
-              className={`relative h-20 w-28 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 ${
+              className={`relative h-16 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 sm:h-20 sm:w-28 ${
                 activeIndex === index ? "border-accent" : "border-transparent"
               }`}
             >

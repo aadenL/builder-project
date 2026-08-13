@@ -50,13 +50,13 @@ async function AccountNavigation() {
       return (
         <Link
           href="/account"
-          className="flex items-center gap-2 rounded-lg border border-border px-3.5 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:text-accent"
+          className="flex min-w-0 max-w-44 items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-semibold"
           aria-label={`View ${user.name}'s account`}
         >
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
             {user.name.charAt(0).toUpperCase()}
           </span>
-          {user.name}
+          <span className="truncate">{user.name}</span>
         </Link>
       );
     }
@@ -95,62 +95,62 @@ export default function RootLayout({
         <FavoritesProvider>
           <header className="border-b border-border bg-surface shadow-sm">
             <nav
-              className="flex w-full flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto]"
+              className="flex w-full flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center"
               aria-label="Main navigation"
             >
-              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 lg:flex-nowrap">
-                <Link
-                  href="/"
-                  className="shrink-0 text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent"
-                >
-                  Preconstruction Listings
-                </Link>
+              <Link
+                href="/"
+                className="text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent"
+              >
+                Preconstruction Listings
+              </Link>
 
-                {/* Submitting this form performs a GET request to the home route, for example /?query=Toronto. */}
-                <Form
-                  action="/"
-                  className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none"
+              <Form
+                action="/"
+                className="flex w-full min-w-0 items-center gap-2 lg:max-w-sm"
+              >
+                <select
+                  name="field"
+                  defaultValue="all"
+                  aria-label="Search category"
+                  className="search-input max-w-[8rem] rounded-md border border-border bg-background px-2 py-2 text-sm sm:max-w-none"
                 >
-                  <select
-                    name="field"
-                    defaultValue="all"
-                    aria-label="Search category"
-                    className="search-input rounded-md border border-border bg-background px-2 py-2 text-sm"
-                  >
-                    <option value="all">All fields</option>
-                    <option value="location">Location</option>
-                    <option value="developer">Developer</option>
-                    <option value="name">Listing name</option>
-                    <option value="type">Property type</option>
-                    <option value="features">Features</option>
-                    <option value="tags">Tags</option>
-                  </select>
-                  <input
-                    type="search"
-                    name="query"
-                    placeholder="Search listings"
-                    aria-label="Search listings"
-                    className="search-input min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted sm:w-52 sm:flex-none"
-                  />
-                </Form>
+                  <option value="all">All fields</option>
+                  <option value="location">Location</option>
+                  <option value="developer">Developer</option>
+                  <option value="name">Listing name</option>
+                  <option value="type">Property type</option>
+                  <option value="features">Features</option>
+                  <option value="tags">Tags</option>
+                </select>
 
+                <input
+                  type="search"
+                  name="query"
+                  placeholder="Search listings"
+                  aria-label="Search listings"
+                  className="search-input min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted"
+                />
+              </Form>
+
+              <div className="flex flex-wrap items-center gap-2 lg:ml-auto lg:flex-nowrap">
                 <Link
                   href="/favorites"
-                  className="px-2 py-2 text-sm font-medium text-foreground transition-colors hover:text-accent"
+                  className="px-2 py-2 text-sm font-medium text-foreground hover:text-accent"
                 >
                   Favorites
                 </Link>
 
                 <Link
                   href="/contact"
-                  className="px-2 py-2 text-sm font-medium text-foreground transition-colors hover:text-accent"
+                  className="px-2 py-2 text-sm font-medium text-foreground hover:text-accent"
                 >
                   Contact
                 </Link>
-              </div>
 
-              <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-0 lg:justify-self-end">
-                <AccountNavigation />
+                <div className="ml-auto flex items-center gap-2 lg:ml-2">
+                  <AccountNavigation />
+                </div>
               </div>
             </nav>
           </header>

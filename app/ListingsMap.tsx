@@ -343,7 +343,7 @@ export default function ListingsMap({
   return (
     <div
       ref={container}
-      className="h-full min-h-[26rem] w-full border-l border-border lg:min-h-0"
+      className="h-full min-h-72 w-full border-b border-border sm:min-h-96 lg:min-h-0 lg:border-b-0 lg:border-l"
       aria-label="Map showing property listings"
     />
   );

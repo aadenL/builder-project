@@ -95,19 +95,19 @@ export default async function Home({
     <main className="flex min-h-0 w-full flex-1 flex-col">
       <Form
         action="/"
-        className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-4 border-b border-border bg-surface px-4 py-5 sm:px-6 lg:px-8"
+        className="grid shrink-0 grid-cols-1 gap-3 border-b border-border bg-surface px-4 py-4 sm:grid-cols-2 sm:px-6 lg:flex lg:flex-wrap lg:items-center lg:gap-4 lg:px-8"
       >
         <input type="hidden" name="query" value={searchQuery} />
 
         <input type="hidden" name="field" value={searchField} />
 
-        <label className="flex items-center gap-3 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
           <span>Status</span>
 
           <select
             name="status"
             defaultValue={constructionStatus}
-            className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
+            className="search-input h-10 w-full rounded-md border border-border bg-background px-3 font-normal"
           >
             <option value="all">Any status</option>
             <option value="Pre-construction">Pre-construction</option>
@@ -116,13 +116,13 @@ export default async function Home({
           </select>
         </label>
 
-        <label className="flex items-center gap-3 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
           <span>Home type</span>
 
           <select
             name="type"
             defaultValue={propertyType}
-            className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
+            className="search-input h-10 w-full rounded-md border border-border bg-background px-3 font-normal"
           >
             <option value="all">Any type</option>
             <option value="Detached">Detached</option>
@@ -131,13 +131,13 @@ export default async function Home({
           </select>
         </label>
 
-        <label className="flex items-center gap-3 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
           <span>Beds</span>
 
           <select
             name="beds"
             defaultValue={bedsText}
-            className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
+            className="search-input h-10 w-full rounded-md border border-border bg-background px-3 font-normal"
           >
             <option value="all">Any beds</option>
             <option value="1">1 bed</option>
@@ -149,13 +149,13 @@ export default async function Home({
           </select>
         </label>
 
-        <label className="flex items-center gap-3 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
           <span>Baths</span>
 
           <select
             name="baths"
             defaultValue={bathsText}
-            className="search-input h-10 rounded-md border border-border bg-background px-3 font-normal"
+            className="search-input h-10 w-full rounded-md border border-border bg-background px-3 font-normal"
           >
             <option value="all">Any baths</option>
             <option value="1">1 bath</option>
@@ -169,17 +169,17 @@ export default async function Home({
 
         <Link
           href="/"
-          className="flex h-10 items-center rounded-md border border-border px-5 text-sm font-semibold"
+          className="flex h-10 w-full items-center justify-center rounded-md border border-border px-5 text-sm font-semibold sm:w-auto"
         >
           Clear filters
         </Link>
 
-        <label className="flex items-center gap-3 text-sm font-semibold text-foreground">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
           <span>Price range</span>
           <select
             name="price"
             defaultValue={priceRange}
-            className="search-input h-10 min-w-36 rounded-md border border-border bg-background px-3 text-sm font-normal"
+            className="search-input h-10 w-full rounded-md border border-border bg-background px-3 font-normal"
           >
             <option value="all">Any price</option>
             <option value="under-750k">Under $750k</option>
@@ -188,12 +188,12 @@ export default async function Home({
           </select>
         </label>
 
-        <label className="flex items-center gap-3 text-sm font-semibold text-foreground">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
           <span>Sort by price</span>
           <select
             name="sort"
             defaultValue={sortOrder}
-            className="search-input h-10 min-w-44 rounded-md border border-border bg-background px-3 text-sm font-normal"
+            className="search-input h-10 w-full rounded-md border border-border bg-background px-3 font-normal"
           >
             <option value="default">Default order</option>
             <option value="low-to-high">Lowest to highest</option>
@@ -203,7 +203,7 @@ export default async function Home({
 
         <button
           type="submit"
-          className="h-10 cursor-pointer rounded-md bg-accent px-6 text-sm font-semibold text-white transition hover:opacity-90"
+          className="h-10 w-full rounded-md bg-accent px-6 text-sm font-semibold text-white sm:w-auto"
         >
           Apply
         </button>

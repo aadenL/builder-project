@@ -24,7 +24,7 @@ export default function CalBooking({
     async function configureCalendar() {
       // retrieve the Cal.com embed API for a specific namespace
       const cal = await getCalApi({
-        namespace: "property-viewing",
+        namespace: "pre-construction-consultation",
       });
 
       // configure the UI of the embedded calendar
@@ -45,7 +45,7 @@ export default function CalBooking({
   }, []);
 
   return (
-    <div className="min-h-[620px] overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+    <div className="h-[560px] w-full max-w-full overflow-hidden rounded-xl border border-border bg-surface shadow-sm sm:h-[620px] sm:rounded-2xl">
       <Cal
         namespace="pre-construction-consultation"
         calLink="aadenl/pre-construction-consultation"
@@ -61,8 +61,7 @@ export default function CalBooking({
         style={{
           width: "100%",
           height: "100%",
-          minHeight: "620px",
-          overflow: "scroll",
+          minHeight: "100%",
         }}
       />
     </div>

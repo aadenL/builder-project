@@ -71,7 +71,7 @@ export default async function AccountPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">
             Account
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight">
+          <h1 className="mt-1 break-words text-2xl font-bold tracking-tight sm:text-3xl">
             Welcome, {user.name}
           </h1>
           <p className="mt-2 text-sm text-white/80">
@@ -97,19 +97,19 @@ export default async function AccountPage() {
             </div>
           </dl>
 
-          <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+          <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
             {user.isAdmin === true && (
               <>
                 <Link
                   href="/admin/listings"
-                  className="rounded-lg border border-border px-5 py-2.5 font-semibold"
+                  className="rounded-lg border border-border px-5 py-2.5 text-center font-semibold"
                 >
                   Manage listings
                 </Link>
 
                 <Link
                   href="/admin/listings/new"
-                  className="rounded-lg bg-accent px-5 py-2.5 font-semibold text-white"
+                  className="rounded-lg bg-accent px-5 py-2.5 text-center font-semibold text-white"
                 >
                   Add a listing
                 </Link>
@@ -117,10 +117,10 @@ export default async function AccountPage() {
             )}
 
             {/* Submit the logout Server Action. */}
-            <form action={logout}>
+            <form action={logout} className="w-full sm:w-auto">
               <button
                 type="submit"
-                className="cursor-pointer rounded-lg border border-red-200 bg-red-50 px-5 py-2.5 font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 active:scale-[0.99]"
+                className="w-full cursor-pointer rounded-lg border border-red-200 bg-red-50 px-5 py-2.5 font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 active:scale-[0.99]"
               >
                 Log out
               </button>

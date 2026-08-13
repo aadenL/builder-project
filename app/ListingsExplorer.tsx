@@ -23,7 +23,7 @@ export default function ListingsExplorer({
     <div className="grid min-h-0 flex-1 lg:grid-cols-2">
       {/* Listing cards. */}
       <section className="order-2 min-h-0 overflow-y-auto px-4 py-6 sm:px-6 lg:order-1 lg:px-8">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3">
           {listings.map((listing) => (
             <BuilderCard
               key={listing._id}
@@ -37,7 +37,7 @@ export default function ListingsExplorer({
       </section>
 
       {/* Leaflet map. */}
-      <aside className="order-1 h-[26rem] min-h-0 lg:order-2 lg:h-full">
+      <aside className="order-1 h-72 min-h-0 sm:h-96 lg:order-2 lg:h-full">
         <ListingsMap
           listings={listings}
           activeListingId={activeListingId}

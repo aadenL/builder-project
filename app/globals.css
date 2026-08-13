@@ -50,6 +50,28 @@ body {
   line-height: 1.5;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+/* Prevent iOS Safari from zooming the page when a form control receives focus. */
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 /* Make links and interactive cards easy to identify when navigating by keyboard. */
 :focus-visible {
   outline: 3px solid var(--accent);

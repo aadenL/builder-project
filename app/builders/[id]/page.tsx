@@ -32,7 +32,7 @@ export default async function BuilderPage({
         <p className="text-center text-xs font-semibold tracking-[0.18em] text-muted uppercase">
           {builder.location}
         </p>
-        <h1 className="mt-2 text-center text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
+        <h1 className="mt-2 break-words text-center text-2xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
           {builder.name}
         </h1>
 
@@ -46,7 +46,7 @@ export default async function BuilderPage({
           />
         </div>
 
-        <div className="relative mt-6 overflow-hidden rounded-2xl bg-accent/10 px-6 py-8 sm:px-12 sm:py-11">
+        <div className="relative mt-6 overflow-hidden rounded-2xl bg-accent/10 px-4 py-6 sm:px-10 sm:py-10">
           <div className="absolute inset-y-0 left-0 hidden w-16 bg-[linear-gradient(135deg,transparent_49%,rgba(15,118,110,0.15)_50%,transparent_51%)] bg-[length:18px_18px] sm:block" />
           <div className="absolute inset-y-0 right-0 hidden w-16 bg-[linear-gradient(135deg,transparent_49%,rgba(15,118,110,0.15)_50%,transparent_51%)] bg-[length:18px_18px] sm:block" />
 
@@ -110,10 +110,10 @@ export default async function BuilderPage({
           {details.map(([label, value]) => (
             <div
               key={label}
-              className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-4 border-b border-border py-3 text-sm"
+              className="grid gap-1 border-b border-border py-3 text-sm sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] sm:gap-4"
             >
               <dt className="font-semibold text-foreground">{label}</dt>
-              <dd className="text-foreground/75">{value}</dd>
+              <dd className="break-words text-foreground/75">{value}</dd>
             </div>
           ))}
         </dl>
@@ -121,7 +121,7 @@ export default async function BuilderPage({
 
       <section className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-x-0 bottom-0 h-24 bg-accent/10" />
-        <div className="relative grid gap-6 border border-accent/30 bg-surface p-6 shadow-sm sm:grid-cols-3 sm:p-8">
+        <div className="relative grid gap-5 rounded-xl border border-accent/30 bg-surface p-5 shadow-sm sm:grid-cols-3 sm:p-8">
           <div>
             <h2 className="text-base font-semibold text-foreground">
               Pricing and fees
@@ -156,7 +156,7 @@ export default async function BuilderPage({
             Pre-Construction Consultation
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold text-foreground">
+          <h2 className="mt-2 text-2xl font-bold text-foreground sm:text-3xl">
             Schedule a Consultation
           </h2>
         </div>
