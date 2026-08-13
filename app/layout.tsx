@@ -95,19 +95,19 @@ export default function RootLayout({
         <FavoritesProvider>
           <header className="border-b border-border bg-surface shadow-sm">
             <nav
-              className="flex w-full flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center"
+              className="grid w-full min-w-0 grid-cols-1 gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-6 lg:flex lg:items-center"
               aria-label="Main navigation"
             >
               <Link
                 href="/"
-                className="text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent"
+                className="min-w-0 break-words text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-accent sm:col-span-2 lg:shrink-0"
               >
                 Preconstruction Listings
               </Link>
 
               <Form
                 action="/"
-                className="flex w-full min-w-0 items-center gap-2 lg:max-w-sm"
+                className="flex w-full min-w-0 items-center gap-2 sm:col-span-2 lg:max-w-sm lg:flex-1"
               >
                 <select
                   name="field"
@@ -133,7 +133,7 @@ export default function RootLayout({
                 />
               </Form>
 
-              <div className="flex flex-wrap items-center gap-2 lg:ml-auto lg:flex-nowrap">
+              <div className="flex shrink-0 items-center gap-2">
                 <Link
                   href="/favorites"
                   className="px-2 py-2 text-sm font-medium text-foreground hover:text-accent"
@@ -148,9 +148,10 @@ export default function RootLayout({
                   Contact
                 </Link>
 
-                <div className="ml-auto flex items-center gap-2 lg:ml-2">
-                  <AccountNavigation />
-                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 sm:justify-self-end lg:ml-auto lg:shrink-0">
+                <AccountNavigation />
               </div>
             </nav>
           </header>

@@ -92,7 +92,7 @@ export default async function Home({
   });
 
   return (
-    <main className="flex min-h-0 w-full flex-1 flex-col">
+    <main className="w-full lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
       <Form
         action="/"
         className="grid shrink-0 grid-cols-1 gap-3 border-b border-border bg-surface px-4 py-4 sm:grid-cols-2 sm:px-6 lg:flex lg:flex-wrap lg:items-center lg:gap-4 lg:px-8"

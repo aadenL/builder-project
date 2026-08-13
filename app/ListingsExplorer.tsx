@@ -20,9 +20,9 @@ export default function ListingsExplorer({
   const activeListingId = hoveredListingId ?? selectedListingId;
 
   return (
-    <div className="grid min-h-0 flex-1 lg:grid-cols-2">
+    <div className="grid lg:min-h-0 lg:flex-1 lg:grid-cols-2">
       {/* Listing cards. */}
-      <section className="order-2 min-h-0 overflow-y-auto px-4 py-6 sm:px-6 lg:order-1 lg:px-8">
+      <section className="order-2 px-4 py-6 sm:px-6 lg:order-1 lg:min-h-0 lg:overflow-y-auto lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3">
           {listings.map((listing) => (
             <BuilderCard
