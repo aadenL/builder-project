@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getBuilderById } from "@/app/builderData";
 import ListingGallery from "@/app/api/builders/[id]/ListingGallery";
 import CalBooking from "@/app/CalBooking";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -150,6 +151,34 @@ export default async function BuilderPage({
         </div>
       </section>
 
+      {builder.hasFloorplanImage && (
+        <section className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-accent">
+              Project layout
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold text-foreground sm:text-3xl">
+              Floor plan &amp; site plan
+            </h2>
+
+            <div className="relative mt-6 aspect-[16/9] overflow-hidden rounded-xl border border-border bg-background">
+              <Image
+                src={`/api/builders/${builder._id}/floorplan-image`}
+                alt={
+                  builder.floorplanImageAlt ||
+                  `Floor or site plan for ${builder.name}`
+                }
+                fill
+                unoptimized
+                sizes="(max-width: 1200px) 100vw, 1200px"
+                className="object-contain"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-6">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-accent">
@@ -167,6 +196,7 @@ export default async function BuilderPage({
           listingAddress={builder.address}
         />
       </section>
+
     </main>
   );
 }

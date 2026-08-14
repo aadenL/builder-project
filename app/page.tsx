@@ -95,13 +95,13 @@ export default async function Home({
     <main className="w-full lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
       <Form
         action="/"
-        className="grid shrink-0 grid-cols-1 gap-3 border-b border-border bg-surface px-4 py-4 sm:grid-cols-2 sm:px-6 lg:flex lg:flex-wrap lg:items-center lg:gap-4 lg:px-8"
+        className="grid shrink-0 grid-cols-1 gap-3 border-b border-border bg-surface px-4 py-4 sm:grid-cols-2 sm:px-6 lg:flex lg:flex-nowrap lg:items-end lg:gap-3 lg:px-8"
       >
         <input type="hidden" name="query" value={searchQuery} />
 
         <input type="hidden" name="field" value={searchField} />
 
-        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold lg:flex-1">
           <span>Status</span>
 
           <select
@@ -116,7 +116,7 @@ export default async function Home({
           </select>
         </label>
 
-        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold lg:flex-1">
           <span>Home type</span>
 
           <select
@@ -131,7 +131,7 @@ export default async function Home({
           </select>
         </label>
 
-        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold lg:flex-1">
           <span>Beds</span>
 
           <select
@@ -149,7 +149,7 @@ export default async function Home({
           </select>
         </label>
 
-        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold lg:flex-1">
           <span>Baths</span>
 
           <select
@@ -169,12 +169,12 @@ export default async function Home({
 
         <Link
           href="/"
-          className="flex h-10 w-full items-center justify-center rounded-md border border-border px-5 text-sm font-semibold sm:w-auto"
+          className="flex h-10 w-full items-center justify-center rounded-md border border-border px-5 text-sm font-semibold sm:w-auto lg:order-1 lg:shrink-0"
         >
           Clear filters
         </Link>
 
-        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold lg:flex-1">
           <span>Price range</span>
           <select
             name="price"
@@ -188,7 +188,7 @@ export default async function Home({
           </select>
         </label>
 
-        <label className="grid min-w-0 gap-1.5 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1.5 text-sm font-semibold lg:flex-1">
           <span>Sort by price</span>
           <select
             name="sort"
@@ -203,7 +203,7 @@ export default async function Home({
 
         <button
           type="submit"
-          className="h-10 w-full rounded-md bg-accent px-6 text-sm font-semibold text-white sm:w-auto"
+          className="h-10 w-full rounded-md bg-accent px-6 text-sm font-semibold text-white sm:w-auto lg:order-1 lg:shrink-0"
         >
           Apply
         </button>

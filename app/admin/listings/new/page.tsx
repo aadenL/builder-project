@@ -13,6 +13,8 @@ import ImageUpload from "@/app/admin/listings/new/imageUpload2";
 
 import AddressAutocomplete from "./AddressAutocomplete";
 
+import FloorplanImageUpload from "./FloorplanImageUpload";
+
 // new listing page
 export default async function NewListingPage() {
   // read the JWT stored in the session cookie
@@ -146,6 +148,13 @@ export default async function NewListingPage() {
             <div className="mt-5">
               <ImageUpload />
             </div>
+
+            <FormSection
+              title="Floor/Site plan"
+              description="Upload a floor plan or site plan"
+            >
+              <FloorplanImageUpload />
+            </FormSection>
 
             {/* The Server Action separates these comma-separated values into arrays. */}
             <div className="mt-5 grid gap-5 sm:grid-cols-2">

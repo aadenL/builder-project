@@ -36,6 +36,10 @@ type PreviewData = {
     alt: string;
     fileName: string;
   }[];
+  floorplanImage: {
+    previewUrl: string;
+    alt: string;
+  } | null;
 };
 
 export default function ListingFormPreview({
@@ -124,6 +128,15 @@ export default function ListingFormPreview({
       fileName: image.name,
     }));
 
+    const floorplanEntry = formData.get("floorplanImage");
+    const floorplanImage =
+      floorplanEntry instanceof File && floorplanEntry.size > 0
+        ? {
+            previewUrl: URL.createObjectURL(floorplanEntry),
+            alt: String(formData.get("floorplanImageAlt") ?? "").trim(),
+          }
+        : null;
+
     // accepts the name of the form field
     // used for fields that have string inputs
     // for example: name = "developer", and the value is Fairgate Homes"
@@ -154,6 +167,7 @@ export default function ListingFormPreview({
 
       // store all the preview images in state
       images: previewImages,
+      floorplanImage,
     });
   }
 
@@ -163,6 +177,10 @@ export default function ListingFormPreview({
     // the cleanup loops over the whole thing.
     // React runs this cleanup when the preview changes, the user closes the preview, or the compo
     const previewUrls = preview?.images.map((image) => image.previewUrl) ?? [];
+
+    if (preview?.floorplanImage) {
+      previewUrls.push(preview.floorplanImage.previewUrl);
+    }
 
     // cleanup function, a function returned from useEffect is its cleanup function
     // react runs it before running effect again because the preview changed
@@ -303,6 +321,29 @@ export default function ListingFormPreview({
 
                 {/* Description. */}
                 <p className="mt-6 leading-7">{preview.desc}</p>
+
+                {preview.floorplanImage && (
+                  <section className="mt-10 border-t border-border pt-8">
+                    <p className="text-sm font-semibold uppercase tracking-[0.16em] text-accent">
+                      Project layout
+                    </p>
+                    <h2 className="mt-2 text-2xl font-bold">
+                      Floor plan &amp; site plan
+                    </h2>
+                    <div className="relative mt-5 aspect-[16/9] overflow-hidden rounded-xl border border-border bg-background">
+                      <Image
+                        src={preview.floorplanImage.previewUrl}
+                        alt={
+                          preview.floorplanImage.alt ||
+                          `Floor or site plan for ${preview.name}`
+                        }
+                        fill
+                        unoptimized
+                        className="object-contain"
+                      />
+                    </div>
+                  </section>
+                )}
 
                 {/* Selected features. */}
                 {preview.features.length > 0 && (

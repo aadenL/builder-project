@@ -375,15 +375,72 @@ export async function createListing(formData: FormData) {
     });
   }
 
+  const floorplanImageEntry = formData.get("floorplanImage");
+
+  const floorplanImage =
+    floorplanImageEntry instanceof File && floorplanImageEntry.size > 0
+      ? floorplanImageEntry
+      : null;
+
+  const floorplanImageAlt = String(
+    formData.get("floorplanImageAlt") ?? "",
+  ).trim();
+
+  if (floorplanImage) {
+    if (!allowedTypes.has(floorplanImage.type)) {
+      throw new Error("Floor plan image must be a JPG, PNG, or WebP");
+    }
+  }
+
+  if (floorplanImage && floorplanImage.size > maxSize) {
+    throw new Error("Floor plan image cannot be larger than 5 MB");
+  }
+
+  const listingId = new ObjectId();
+  const listingData = listingSchema
+    .omit({ addressToken: true })
+    .parse(result.data);
+
+  let storedFloorplanImage = null;
+
+  if (floorplanImage) {
+    const originalBuffer = Buffer.from(await floorplanImage.arrayBuffer());
+
+    const { data, info } = await sharp(originalBuffer, {
+      autoOrient: true,
+      limitInputPixels: 40_000_000,
+    })
+      .resize({
+        width: 2000,
+        height: 2000,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({
+        quality: 85,
+        effort: 4,
+      })
+      .toBuffer({ resolveWithObject: true });
+
+    storedFloorplanImage = {
+      data,
+      contentType: "image/webp",
+      fileName: floorplanImage.name.replace(/\.[^.]+$/, "") + ".webp",
+      size: data.length,
+      width: info.width,
+      height: info.height,
+      alt: floorplanImageAlt,
+    };
+  }
+
   // check the total size of all processed images to ensure it doesn't exceed the max total image size
-  const totalImageSize = storedImages.reduce(
+  const totalImageSize =
     // total is the accumulated size of all imgs processed so far
     // image is the current image being processed
     // total + image.size adds the size of the current image to the accumulated total
     // the 0 at the end is the initial value of total, which is 0 before any imgs are processed
-    (total, image) => total + image.size,
-    0,
-  );
+    storedImages.reduce((total, image) => total + image.size, 0) +
+    (storedFloorplanImage?.size ?? 0);
 
   // if the total size of all processed images exceeds the max total image size, throw an error
   if (totalImageSize > maximumTotalImageSize) {
@@ -392,14 +449,12 @@ export async function createListing(formData: FormData) {
     );
   }
 
-  const listingId = new ObjectId();
-  const listingData = listingSchema
-    .omit({ addressToken: true })
-    .parse(result.data);
-
   await db.collection("builders").insertOne({
     _id: listingId,
     ...listingData,
+    floorplanImage: storedFloorplanImage,
+    hasFloorplanImage: storedFloorplanImage !== null,
+    floorplanImageAlt,
 
     // save Geoapify's verified address and coordinates
     address: verifiedAddress.address,

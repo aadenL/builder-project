@@ -294,7 +294,7 @@ export default function ImageUpload() {
       <label
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
-        className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-border bg-background px-6 py-10 text-center transition hover:border-accent"
+        className="relative flex cursor-pointer flex-col items-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-background px-6 py-10 text-center transition hover:border-accent"
       >
         <input
           ref={inputRef}
@@ -304,7 +304,7 @@ export default function ImageUpload() {
           multiple
           required
           onChange={handleChange}
-          className="sr-only"
+          className="absolute inset-0 z-10 cursor-pointer opacity-0"
         />
 
         <span className="font-semibold text-foreground">Drop images here</span>

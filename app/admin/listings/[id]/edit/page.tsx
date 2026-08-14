@@ -27,6 +27,7 @@ export default async function EditListingPage({
     {
       projection: {
         "images.data": 0,
+        "floorplanImages.data": 0,
       },
     },
   );

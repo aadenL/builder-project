@@ -34,6 +34,9 @@ export type Builder = {
 
   imageCount?: number;
   imageAlts?: string[];
+
+  hasFloorplanImage?: boolean;
+  floorplanImageAlt?: string;
 };
 
 const searchFields = [
@@ -273,6 +276,7 @@ export async function getBuilders({
     // images: 0 means do not include the image in the returned data
     $project: {
       images: 0,
+      floorplanImage: 0,
     },
   });
 
@@ -311,7 +315,10 @@ export async function getBuilderById(id: string) {
     .collection<BuilderDocument>("builders")
 
     //finds the one doc (builder) in the MongoDb database that the _id matches the id
-    .findOne({ _id: new ObjectId(id) }, { projection: { images: 0 } });
+    .findOne(
+      { _id: new ObjectId(id) },
+      { projection: { images: 0, floorplanImage: 0 } },
+    );
 
   //if MongoDB finds a builder, convert it into app format and return it, else return null
   return builder ? serializeBuilder(builder) : null;
