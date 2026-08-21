@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import { getSession } from "@/app/auth/session";
 import { getDb } from "@/app/mongodb";
+import { updateNewsletterPref } from "@/app/account/actions";
 
 // a server component that checks the session, loads the user from MongoDB, and redirects unauthenticated users to login
 /**
@@ -50,7 +51,7 @@ export default async function AccountPage() {
             email: "alex@example.com"
             }
          */
-    { projection: { name: 1, email: 1, isAdmin: 1 } },
+    { projection: { name: 1, email: 1, isAdmin: 1, newsletter: 1 } },
   );
 
   // a valid session doesn't mean the user still exists, they could have deleted the account after the session was made
@@ -96,6 +97,37 @@ export default async function AccountPage() {
               </dd>
             </div>
           </dl>
+
+          <section className="mt-6 rounded-xl border border-border p-4">
+            <h2 className="font-semibold text-foreground">Email preferences</h2>
+
+            <p className="mt-1 text-sm text-muted">
+              Control whether you receive open-house and preconstruction
+              updates.
+            </p>
+
+            <form action={updateNewsletterPref} className="mt-4">
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="newsletterSubbed"
+                  defaultChecked={user.newsletter?.subscribed === true}
+                  className="mt-1"
+                />
+
+                <span className="text-sm">
+                  Send me open-house and project announcements.
+                </span>
+              </label>
+
+              <button
+                type="submit"
+                className="mt-4 rounded-lg bg-accent px-5 py-2.5 font-semibold text-white"
+              >
+                Save email preferences
+              </button>
+            </form>
+          </section>
 
           <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
             {user.isAdmin === true && (

@@ -45,6 +45,16 @@ type UserDocument = {
   email: string;
   passwordHash: string;
   createdAt: Date;
+
+  newsletter: {
+    subscribed: boolean;
+    consentedAt: Date | null;
+    consentSource: string | null;
+    consentVersion: string | null;
+    unsubscribedAt: Date | null;
+    suppressed: boolean;
+    suppressionReason: string | null;
+  };
 };
 
 // createas a Zod schema describing valid signup info
@@ -131,6 +141,9 @@ export async function signup(formData: FormData) {
   // declares a variable that will hold the MongoDB ID after insertion
   let userId: ObjectId;
 
+  // read whether the user consented to receiving the newsletter
+  const newsletterConsent = formData.get("newsletterConsent") === "on";
+
   try {
     // attempts to insert a new document into users
     // insertOne() returns info about the operation
@@ -142,6 +155,15 @@ export async function signup(formData: FormData) {
       passwordHash,
       // provides what date the account was created at, records current date and time of account creation
       createdAt: new Date(),
+      newsletter: {
+        subscribed: newsletterConsent,
+        consentedAt: newsletterConsent ? new Date() : null,
+        consentSource: newsletterConsent ? "account-signup" : null,
+        consentVersion: newsletterConsent ? "2026-08-18" : null,
+        unsubscribedAt: null,
+        suppressed: false,
+        suppressionReason: null,
+      },
     });
 
     // assigns userId to insertedId, which is the _id of the newly created document
